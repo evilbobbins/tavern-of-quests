@@ -546,3 +546,89 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   .completed-actions .btn-archive,
   .completed-actions .btn-clear-completed { min-width: 100%; }
 }
+
+/* Quest Share Button */
+.share-btn {
+  color: #3498db;
+}
+
+.share-btn:hover {
+  background: rgba(52, 152, 219, 0.2);
+}
+
+/* Share Quest Modal Styles */
+.share-quest-info {
+  background: rgba(26, 15, 10, 0.6);
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.share-quest-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.share-quest-meta {
+  font-size: 0.9rem;
+  color: var(--parchment-dark);
+}
+
+.share-section-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  color: var(--gold-light);
+  margin-bottom: 12px;
+}
+
+.share-user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.share-user-item {
+  background: rgba(26, 15, 10, 0.6);
+  border: 1px solid var(--gold-dark);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.share-user-item:hover {
+  border-color: var(--gold);
+  background: rgba(212, 168, 67, 0.1);
+  transform: translateX(4px);
+}
+
+.share-user-avatar {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 0 8px rgba(212, 168, 67, 0.3));
+}
+
+.share-user-info {
+  flex: 1;
+}
+
+.share-user-name {
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.share-user-stats {
+  font-size: 0.85rem;
+  color: var(--parchment-dark);
+}

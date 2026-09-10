@@ -9,6 +9,9 @@ export function createQuestCard(quest, category) {
     ? (category.id === 'household' ? 'tag-household' : 'tag-technology')
     : 'tag-custom';
   
+  // Check if there are other users to share with
+  const showShareButton = (window.otherUsersCount || 0) > 0;
+  
   card.innerHTML = `
     <div class="quest-card-top">
       <div class="quest-checkbox" onclick="window.toggleQuest('${quest.id}')"></div>
@@ -17,13 +20,14 @@ export function createQuestCard(quest, category) {
         <div class="quest-meta">
           <span class="quest-tag ${tagClass}">${category.emoji} ${escapeHtml(category.name)}</span>
           <span class="tag-priority priority-${quest.priority}-badge">${CONFIG.PRIORITY_LABELS[quest.priority]}</span>
-          <span class="quest-xp">\u2728 ${quest.xp} XP</span>
+          <span class="quest-xp">✨ ${quest.xp} XP</span>
         </div>
         ${quest.description ? `<div class="quest-description">${escapeHtml(quest.description)}</div>` : ''}
       </div>
       <div class="quest-actions">
-        <button class="quest-btn edit-btn" onclick="window.openEditModal('${quest.id}')" title="Edit">\u270F\uFE0F</button>
-        <button class="quest-btn delete-btn" onclick="window.deleteQuest('${quest.id}')" title="Delete">\u{1F5D1}\uFE0F</button>
+        ${showShareButton ? `<button class="quest-btn share-btn" onclick="window.shareQuest('${quest.id}')" title="Share Quest">📤</button>` : ''}
+        <button class="quest-btn edit-btn" onclick="window.openEditModal('${quest.id}')" title="Edit">✏️</button>
+        <button class="quest-btn delete-btn" onclick="window.deleteQuest('${quest.id}')" title="Delete">🗑️</button>
       </div>
     </div>
   `;

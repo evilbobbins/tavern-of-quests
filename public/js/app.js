@@ -31,6 +31,7 @@ window.completedPage = 0;
 window.connectionStatus = 'offline';
 window.lastSaveError = null;
 window.saveQueue = Promise.resolve();
+window.otherUsersCount = 0; // Track number of other users for share button visibility
 
 // Make template and modal functions globally available
 window.openTemplateManager = openTemplateManager;
@@ -118,6 +119,7 @@ async function loadAppState() {
     
     window.completedPage = 0;
     await updateCurrentUserDisplay();
+    await updateOtherUsersCount(); // Load other users count for share button
     window.renderAll();
   } else {
     showToast('⚠️', 'Load Failed', 'Could not load character data.');
@@ -126,6 +128,17 @@ async function loadAppState() {
 }
 
 window.loadAppState = loadAppState;
+
+// Load and cache the count of other users
+async function updateOtherUsersCount() {
+  try {
+    const users = await loadUsers();
+    window.otherUsersCount = users.filter(u => u.id !== window.currentUserId).length;
+  } catch (err) {
+    console.error('Failed to load other users count:', err);
+    window.otherUsersCount = 0;
+  }
+}
 
 function showCharacterSelect() {
   document.getElementById('char-select-screen').classList.remove('hidden');
@@ -330,6 +343,99 @@ window.deleteQuest = async (id) => {
     window.renderAll(); // Rollback UI
   }
 };
+
+// === QUEST SHARING FUNCTIONS ===
+
+window.shareQuest = async (questId) => {
+  const quest = window.state.quests.find(q => q.id === questId);
+  if (!quest) return;
+  
+  // Load all users
+  const allUsers = await loadUsers();
+  const otherUsers = allUsers.filter(u => u.id !== window.currentUserId);
+  
+  if (otherUsers.length === 0) {
+    showToast('⚠️', 'No Other Adventurers', 'Create more adventurers to share quests!');
+    return;
+  }
+  
+  // Create modal with list of other adventurers
+  const userListHtml = otherUsers.map(u => `
+    <div class="share-user-item" onclick="window.confirmShareQuest('${questId}', '${u.id}')">
+      <div class="share-user-avatar">${u.avatar}</div>
+      <div class="share-user-info">
+        <div class="share-user-name">${escapeHtml(u.name)}</div>
+        <div class="share-user-stats">Level ${u.level} • ${u.questCount} Quests</div>
+      </div>
+    </div>
+  `).join('');
+  
+  const content = `
+    <div class="modal-header">
+      <h3 class="modal-title">📤 Share Quest</h3>
+      <button class="modal-close" onclick="window.closeTopModal()">&times;</button>
+    </div>
+    <div class="share-quest-info">
+      <div class="share-quest-name">${escapeHtml(quest.name)}</div>
+      <div class="share-quest-meta">
+        ${quest.type === 'main' ? '⚔️ Main Quest' : '🗺️ Side Quest'} • 
+        ${CONFIG.PRIORITY_LABELS[quest.priority]} • 
+        ✨ ${quest.xp} XP
+      </div>
+    </div>
+    <div class="share-section-title">Select an Adventurer to share with:</div>
+    <div class="share-user-list">
+      ${userListHtml}
+    </div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-cancel" onclick="window.closeTopModal()">Cancel</button>
+    </div>
+  `;
+  
+  createModal(content);
+};
+
+window.confirmShareQuest = async (questId, targetUserId) => {
+  const quest = window.state.quests.find(q => q.id === questId);
+  if (!quest) return;
+  
+  // Load target user's state
+  const targetState = await loadState(targetUserId);
+  if (!targetState) {
+    showToast('⚠️', 'Error', 'Could not load target adventurer\'s data.');
+    return;
+  }
+  
+  // Create a copy of the quest for the target user
+  const sharedQuest = {
+    ...quest,
+    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    sharedFrom: window.currentUserId // Track who shared it
+  };
+  
+  // Add to target user's quests
+  if (!targetState.quests) targetState.quests = [];
+  targetState.quests.push(sharedQuest);
+  
+  // Save target user's state
+  const saveResult = await saveState(targetUserId, targetState);
+  
+  if (saveResult.success) {
+    // Get target user's name for the toast
+    const users = await loadUsers();
+    const targetUser = users.find(u => u.id === targetUserId);
+    const targetName = targetUser ? targetUser.name : 'Adventurer';
+    
+    closeTopModal();
+    showToast('📤', 'Quest Shared!', `"${quest.name}" shared with ${targetName}.`);
+  } else {
+    showToast('⚠️', 'Share Failed', 'Could not share quest with target adventurer.');
+  }
+};
+
+// === END QUEST SHARING FUNCTIONS ===
 
 window.openEditModal = (id) => {
   const quest = window.state.quests.find(q => q.id === id);
