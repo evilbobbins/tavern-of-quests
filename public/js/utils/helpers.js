@@ -41,6 +41,21 @@ export function showToast(icon, title, message) {
   setTimeout(() => toast.remove(), 4000);
 }
 
+export function showUndoToast(icon, title, message, onUndo) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><button class="toast-undo" type="button">Undo</button>`;
+  const timeout = setTimeout(() => toast.remove(), 5000);
+  toast.querySelector('.toast-undo').addEventListener('click', async () => {
+    clearTimeout(timeout);
+    toast.remove();
+    await onUndo();
+  });
+  document.body.appendChild(toast);
+}
+
 export function showLevelUp(level) {
   const overlay = document.createElement('div');
   overlay.className = 'level-up-overlay';

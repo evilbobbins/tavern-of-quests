@@ -37,7 +37,7 @@ export function renderQuestBoard(quests, filters, onFilterChange) {
   
   const mainList = document.getElementById('main-quest-list');
   mainList.innerHTML = sortedMain.length === 0
-    ? '<div class="empty-state"><span class="empty-icon">\u2694\uFE0F</span>No main quests.</div>'
+    ? '<div class="empty-state"><span class="empty-icon">\u2694\uFE0F</span><strong>Your quest board is ready.</strong><br>Post your first quest, or start from a template.<div class="empty-actions"><button class="empty-action" type="button" onclick="document.getElementById(\'quest-name\').focus()">Post a quest</button><button class="empty-action" type="button" onclick="window.openTemplatePicker()">Use a template</button></div></div>'
     : sortedMain.map(q => {
         if (!q) return '';
         const cat = getCategoryById(q.category, window.state?.customCategories || []);

@@ -3,7 +3,7 @@ import { renderQuestBoard } from './components/QuestBoard.js';
 import { renderCompletedQuests } from './components/CompletedQuests.js';
 import { openAdminPanel } from './components/AdminPanel.js';
 import { loadState, saveState, loadUsers } from './services/api.js';
-import { createParticles, showToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
+import { createParticles, showToast, showUndoToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
 import { getAllCategories, getCategoryById, getCategoryTagClass } from './utils/categoryUtils.js';
 import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
 import { createModal, closeModal, closeTopModal } from './components/Modal.js';
@@ -18,6 +18,7 @@ window.state = {
   completed: [],
   archived: [],
   templates: [],
+  activity: [],
   xp: 0,
   level: 1,
   streak: 0,
@@ -100,6 +101,7 @@ async function loadAppState() {
     if (!Array.isArray(window.state.customCategories)) window.state.customCategories = [];
     if (!Array.isArray(window.state.archived)) window.state.archived = [];
     if (!Array.isArray(window.state.templates)) window.state.templates = [];
+    if (!Array.isArray(window.state.activity)) window.state.activity = [];
     
     window.state.quests.forEach(q => { if (!q.priority) q.priority = 'medium'; });
     window.state.completed.forEach(q => { if (!q.priority) q.priority = 'medium'; });
@@ -179,6 +181,14 @@ function renderAll() {
 
 window.renderAll = renderAll;
 
+function recordActivity(icon, message) {
+  if (!Array.isArray(window.state.activity)) window.state.activity = [];
+  window.state.activity.unshift({ icon, message, at: new Date().toISOString() });
+  window.state.activity = window.state.activity.slice(0, 20);
+}
+
+window.recordActivity = recordActivity;
+
 function renderCategoryDropdown() {
   const select = document.getElementById('quest-category');
   if (!select) return;
@@ -215,10 +225,16 @@ async function doSave() {
     try {
       const result = await saveState(window.currentUserId, window.state);
       if (result.success) {
+        window.state._revision = result.revision;
         window.connectionStatus = 'online';
         window.lastSaveError = null;
         return true;
       } else {
+        if (result.conflict) {
+          await loadAppState();
+          showToast('⚠️', 'Changes Reloaded', 'Another session saved first, so the latest state was loaded.');
+          return false;
+        }
         throw new Error(result.error || 'Save failed');
       }
     } catch (err) {
@@ -272,6 +288,7 @@ async function handleAddQuest() {
     };
     
     window.state.quests.push(quest);
+    recordActivity('📜', `Posted “${name}”`);
     window.renderAll(); // Immediate UI update
     
     const saved = await saveStateWrapper();
@@ -302,6 +319,7 @@ window.toggleQuest = async (id) => {
   const idx = window.state.quests.findIndex(q => q.id === id);
   if (idx === -1) return;
   const quest = window.state.quests[idx];
+  const priorStats = { xp: window.state.xp, level: window.state.level, streak: window.state.streak, lastCompletedDate: window.state.lastCompletedDate };
   quest.completedAt = new Date().toISOString();
   window.state.completed.push(quest);
   window.state.quests.splice(idx, 1);
@@ -314,10 +332,18 @@ window.toggleQuest = async (id) => {
     window.state.streak = window.state.lastCompletedDate === yesterday ? window.state.streak + 1 : 1;
     window.state.lastCompletedDate = today;
   }
+  recordActivity('✅', `Completed “${quest.name}” (+${quest.xp} XP)`);
   window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
-    showToast('⚔️', 'Quest Completed!', `+${quest.xp} XP earned!`);
+    showUndoToast('⚔️', 'Quest Completed!', `+${quest.xp} XP earned!`, async () => {
+      window.state.completed = window.state.completed.filter(q => q.id !== quest.id);
+      window.state.quests.splice(idx, 0, quest);
+      Object.assign(window.state, priorStats);
+      recordActivity('↩️', `Undid completion of “${quest.name}”`);
+      window.renderAll();
+      if (await saveStateWrapper()) showToast('↩️', 'Completion Undone', `“${quest.name}” is active again.`);
+    });
     if (window.state.level > oldLevel) setTimeout(() => showLevelUp(window.state.level), 600);
   } else {
     window.state.completed.pop();
@@ -334,10 +360,16 @@ window.deleteQuest = async (id) => {
   const quest = window.state.quests[idx];
   if (!confirm(`Remove "${quest.name}"?`)) return;
   window.state.quests.splice(idx, 1);
+  recordActivity('🗑️', `Removed “${quest.name}”`);
   window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
-    showToast('🗑️', 'Quest Removed', `"${quest.name}" removed.`);
+    showUndoToast('🗑️', 'Quest Removed', `“${quest.name}” removed.`, async () => {
+      window.state.quests.splice(idx, 0, quest);
+      recordActivity('↩️', `Restored “${quest.name}”`);
+      window.renderAll();
+      if (await saveStateWrapper()) showToast('↩️', 'Quest Restored', `“${quest.name}” is active again.`);
+    });
   } else {
     window.state.quests.splice(idx, 0, quest);
     window.renderAll(); // Rollback UI
@@ -516,6 +548,7 @@ window.saveEdit = async (id) => {
   quest.xp = parseInt(document.getElementById('edit-xp').value);
   quest.description = document.getElementById('edit-desc').value.trim();
   quest.updatedAt = new Date().toISOString();
+  recordActivity('✏️', `Updated “${name}”`);
   window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
@@ -537,6 +570,7 @@ window.confirmRepeatQuest = async (questId) => {
     completedAt: null
   };
   window.state.quests.push(newQuest);
+  recordActivity('🔄', `Repeated “${originalQuest.name}”`);
   closeTopModal();
   window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
@@ -548,16 +582,24 @@ window.confirmRepeatQuest = async (questId) => {
 window.archiveQuest = async (questId) => {
   const quest = window.state.completed.find(q => q.id === questId);
   if (!quest) return;
+  const completedIndex = window.state.completed.findIndex(q => q.id === questId);
   
   window.state.completed = window.state.completed.filter(q => q.id !== questId);
   window.state.archived.push(quest);
+  recordActivity('📦', `Archived “${quest.name}”`);
   
   closeTopModal();
   window.renderAll(); // Immediate UI update
   
   const saved = await saveStateWrapper();
   if (saved) {
-    showToast('📦', 'Quest Archived', `"${quest.name}" moved to archive.`);
+    showUndoToast('📦', 'Quest Archived', `“${quest.name}” moved to archive.`, async () => {
+      window.state.archived = window.state.archived.filter(q => q.id !== quest.id);
+      window.state.completed.splice(completedIndex, 0, quest);
+      recordActivity('↩️', `Unarchived “${quest.name}”`);
+      window.renderAll();
+      if (await saveStateWrapper()) showToast('↩️', 'Archive Undone', `“${quest.name}” is back in completed quests.`);
+    });
   } else {
     window.state.archived.pop();
     window.state.completed.push(quest);
@@ -572,6 +614,7 @@ window.restoreQuest = async (questId) => {
   
   window.state.archived = window.state.archived.filter(q => q.id !== questId);
   window.state.completed.push(quest);
+  recordActivity('🔄', `Restored “${quest.name}” from archive`);
   
   window.renderAll(); // Immediate UI update
   

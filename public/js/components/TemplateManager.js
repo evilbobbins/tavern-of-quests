@@ -124,6 +124,7 @@ window.createTemplate = async () => {
   
   if (!window.state.templates) window.state.templates = [];
   window.state.templates.push(template);
+  window.recordActivity?.('📋', `Created template “${name}”`);
   
   const saved = await window.saveStateWrapper();
   if (saved) {
@@ -135,6 +136,30 @@ window.createTemplate = async () => {
     window.state.templates.pop();
     showToast('⚠️', 'Save Failed', 'Could not save template.');
   }
+};
+
+window.saveQuestFormAsTemplate = async () => {
+  const name = document.getElementById('quest-name')?.value.trim();
+  if (!name) {
+    showToast('⚠️', 'Quest Name Required', 'Name the quest first, then save its settings as a template.');
+    document.getElementById('quest-name')?.focus();
+    return;
+  }
+  const template = {
+    id: 'template_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
+    name,
+    type: document.getElementById('quest-type').value,
+    category: document.getElementById('quest-category').value,
+    priority: document.getElementById('quest-priority').value,
+    xp: parseInt(document.getElementById('quest-xp').value),
+    description: document.getElementById('quest-desc').value.trim()
+  };
+  if (!window.state.templates) window.state.templates = [];
+  window.state.templates.push(template);
+  window.recordActivity?.('📋', `Saved “${name}” as a template`);
+  const saved = await window.saveStateWrapper();
+  if (saved) showToast('📋', 'Template Saved!', `“${name}” is ready to reuse.`);
+  else { window.state.templates.pop(); showToast('⚠️', 'Save Failed', 'Could not save template.'); }
 };
 
 window.openEditTemplateModal = (templateId) => {

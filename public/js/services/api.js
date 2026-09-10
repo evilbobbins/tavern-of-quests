@@ -3,8 +3,9 @@ import { CONFIG } from '../config.js';
 export async function apiFetch(url, options = {}) {
   try {
     const res = await fetch(CONFIG.API_BASE + url, options);
-    if (!res.ok) throw new Error('Server returned ' + res.status);
-    return await res.json();
+    const result = await res.json();
+    if (!res.ok) return { ...result, status: res.status };
+    return result;
   } catch (err) {
     console.error('API Error:', err);
     return { success: false, error: err.message };

@@ -9,11 +9,20 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     : '';
   const customCatCount = (customCategories || []).length;
   const templateCount = (state.templates || []).length;
+  const activity = (state.activity || []).slice(0, 6);
+  const activityHtml = activity.length
+    ? activity.map(item => `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,.15);">${escapeHtml(item.icon || '📜')} ${escapeHtml(item.message || '')}<span style="float:right;opacity:.55;font-size:.72rem;">${item.at ? new Date(item.at).toLocaleDateString() : ''}</span></div>`).join('')
+    : '<div style="opacity:.7;font-style:italic;">Your recent quest activity will appear here.</div>';
   
   const content = `
     <div class="modal-header">
       <h3 class="modal-title">📖 Tavern Keeper's Grimoire</h3>
       <button class="modal-close" onclick="window.closeModal()">&times;</button>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">🕯️ Recent Activity</div>
+      <div style="font-size:.82rem;color:var(--parchment-dark);">${activityHtml}</div>
     </div>
     
     <div class="admin-section">

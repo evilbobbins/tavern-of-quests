@@ -105,6 +105,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .quest-card:hover { border-color: var(--gold); box-shadow: 0 0 15px rgba(212,168,67,0.2); transform: translateX(4px); }
 .quest-card-top { display: flex; align-items: flex-start; gap: 10px; }
 .quest-checkbox { width: 22px; height: 22px; min-width: 22px; border: 2px solid var(--gold-dark); border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; margin-top: 2px; background: rgba(26,15,10,0.5); }
+.quest-checkbox:focus-visible, .quest-btn:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid var(--gold-light); outline-offset: 3px; }
 .quest-checkbox:hover { border-color: var(--gold); background: rgba(212,168,67,0.2); }
 .quest-checkbox.checked { background: var(--priority-low); border-color: var(--priority-low); }
 .quest-checkbox.checked::after { content: '\2713'; color: white; font-size: 14px; font-weight: bold; }
@@ -131,6 +132,11 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 
 .empty-state { text-align: center; padding: 40px 20px; color: var(--parchment-dark); font-style: italic; opacity: 0.6; }
 .empty-state .empty-icon { font-size: 3rem; margin-bottom: 10px; display: block; }
+.empty-actions { display:flex; gap:8px; justify-content:center; margin-top:14px; }
+.empty-action { background:rgba(212,168,67,.12); border:1px solid var(--gold-dark); border-radius:6px; color:var(--gold-light); cursor:pointer; font:700 .72rem 'Cinzel',serif; padding:7px 10px; text-transform:uppercase; }
+.empty-action:hover { background:rgba(212,168,67,.24); }
+.toast-undo { align-self:center; background:transparent; border:1px solid var(--gold); border-radius:5px; color:var(--gold-light); cursor:pointer; font:700 .75rem 'Cinzel',serif; margin-left:10px; padding:6px 9px; text-transform:uppercase; }
+.toast-undo:hover { background:rgba(212,168,67,.18); }
 
 .completed-section { background: linear-gradient(135deg, rgba(44,24,16,0.85), rgba(26,15,10,0.9)); border: 2px solid var(--gold-dark); border-radius: 12px; padding: 24px; margin-bottom: 30px; position: relative; }
 .completed-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #27ae60, transparent); }

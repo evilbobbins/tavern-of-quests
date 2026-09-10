@@ -14,7 +14,7 @@ export function createQuestCard(quest, category) {
   
   card.innerHTML = `
     <div class="quest-card-top">
-      <div class="quest-checkbox" onclick="window.toggleQuest('${quest.id}')"></div>
+      <button class="quest-checkbox" type="button" onclick="window.toggleQuest('${quest.id}')" aria-label="Complete ${escapeHtml(quest.name)}" title="Complete quest"></button>
       <div class="quest-info">
         <div class="quest-name">${escapeHtml(quest.name)}</div>
         <div class="quest-meta">
