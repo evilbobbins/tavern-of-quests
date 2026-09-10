@@ -53,8 +53,10 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .header-subtitle { font-family: 'IM Fell English', serif; font-style: italic; font-size: 1.2rem; color: var(--parchment-dark); margin-top: 8px; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); letter-spacing: 2px; }
 @keyframes title-glow { 0% { text-shadow: 0 0 10px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } 100% { text-shadow: 0 0 20px rgba(212,168,67,0.7), 0 0 40px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } }
 
-.stats-bar { position: relative; z-index: 1; background: linear-gradient(180deg, var(--dark-wood) 0%, #1a0f0a 100%); border-bottom: 2px solid var(--gold-dark); padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+.stats-bar { position: relative; z-index: 3; background: linear-gradient(180deg, var(--dark-wood) 0%, #1a0f0a 100%); border-bottom: 2px solid var(--gold-dark); padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
 .connection-indicator { align-items:center; border:1px solid rgba(212,168,67,.35); border-radius:20px; color:var(--parchment-dark); display:flex; font:700 .7rem 'Cinzel',serif; gap:6px; letter-spacing:.03em; padding:5px 9px; text-transform:uppercase; }
+.connection-indicator { gap:0; padding:6px; }
+.connection-indicator #connection-label { display:none; }
 .connection-dot { background:#e74c3c; border-radius:50%; box-shadow:0 0 7px currentColor; height:7px; width:7px; }.connection-indicator.status-online .connection-dot { background:#2ecc71; }.connection-indicator.status-syncing .connection-dot { background:var(--gold); animation:connection-pulse 1s ease-in-out infinite; }.connection-indicator.status-online { color:#85e8ad; }.connection-indicator.status-syncing { color:var(--gold); }.connection-indicator.status-offline { color:#ff9a95; }@keyframes connection-pulse { 50% { opacity:.35; transform:scale(.75); } }
 .stat-item { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--gold-light); }
 .stat-icon { font-size: 1.3rem; }
@@ -65,6 +67,13 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .admin-trigger:hover, .roster-btn:hover { background: rgba(212,168,67,0.2); border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px rgba(212,168,67,0.3); }
 .current-user-display { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; color: var(--gold); font-weight: 700; font-size: 1.1rem; padding: 4px 12px; background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; cursor: pointer; }
 .current-user-avatar { font-size: 1.4rem; }
+.realm-menu { position: relative; }
+.realm-menu summary { background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; color: var(--gold-dark); cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; list-style: none; padding: 6px 14px; transition: all .3s ease; }
+.realm-menu summary::-webkit-details-marker { display: none; }
+.realm-menu summary:hover, .realm-menu[open] summary { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,.2); }
+.realm-menu-options { background: var(--dark-wood); border: 1px solid var(--gold-dark); border-radius: 8px; box-shadow: 0 8px 18px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 4px; min-width: 135px; padding: 6px; position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; }
+.realm-menu-options button { background: transparent; border: 0; border-radius: 5px; color: var(--parchment); cursor: pointer; font-family: 'Cinzel', serif; padding: 8px 10px; text-align: left; }
+.realm-menu-options button:hover { background: rgba(212,168,67,.18); color: var(--gold); }
 
 .main-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
 .add-quest-section { background: linear-gradient(135deg, rgba(44,24,16,0.9), rgba(26,15,10,0.95)); border: 2px solid var(--gold-dark); border-radius: 12px; padding: 24px; margin-bottom: 30px; position: relative; overflow: hidden; }
@@ -72,6 +81,11 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .add-quest-section::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--gold-dark), transparent); }
 .section-title { font-family: 'Cinzel', serif; font-size: 1.5rem; color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
 .section-title .icon { font-size: 1.8rem; }
+.quest-entry-summary { align-items: center; display: flex; gap: 20px; justify-content: space-between; }
+.quest-entry-summary .section-title { margin-bottom: 5px; }
+.quest-entry-summary p { color: var(--parchment-dark); font-style: italic; }
+.quest-entry-actions { align-items: center; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+.quest-entry-actions .btn-add, .quest-entry-actions .btn-template { font-size: .83rem; padding: 10px 15px; }
 .form-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
 .form-group { flex: 1; min-width: 160px; }
 .form-group label { display: block; font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold-light); margin-bottom: 6px; letter-spacing: 1px; }
@@ -117,6 +131,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .quest-tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-family: 'Cinzel', serif; letter-spacing: 0.5px; text-transform: uppercase; }
 .tag-household { background: rgba(39,174,96,0.2); border: 1px solid rgba(39,174,96,0.5); color: #2ecc71; }
 .tag-technology { background: rgba(142,68,173,0.2); border: 1px solid rgba(142,68,173,0.5); color: #bb8fce; }
+.tag-academy { background: rgba(52,152,219,0.2); border: 1px solid rgba(52,152,219,0.5); color: #8bc8ff; }
 .tag-custom { background: rgba(212,168,67,0.15); border: 1px solid rgba(212,168,67,0.5); color: var(--gold-light); }
 .tag-priority { font-size: 0.7rem; padding: 2px 8px; border-radius: 12px; font-family: 'Cinzel', serif; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 700; }
 .priority-critical-badge { background: rgba(231,76,60,0.25); border: 1px solid var(--priority-critical); color: var(--priority-critical); }
@@ -203,9 +218,11 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .pagination-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .pagination-info { font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--gold); font-weight: 700; min-width: 120px; text-align: center; }
 
-.filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; padding: 0 12px; }
-.filter-tab { padding: 6px 16px; background: rgba(26,15,10,0.6); border: 1px solid var(--gold-dark); border-radius: 20px; color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: 0.8rem; cursor: pointer; transition: all 0.3s ease; }
-.filter-tab:hover, .filter-tab.active { background: rgba(212,168,67,0.2); border-color: var(--gold); color: var(--gold); }
+.filter-tabs { display: flex; justify-content: flex-end; margin-bottom: 12px; padding: 0 12px; }
+.filter-select-label { align-items: center; color: var(--parchment-dark); display: flex; font-family: 'Cinzel', serif; font-size: .72rem; gap: 7px; letter-spacing: .6px; text-transform: uppercase; }
+.filter-select { background: rgba(26,15,10,.72); border: 1px solid var(--gold-dark); border-radius: 6px; color: var(--gold-light); cursor: pointer; font-family: 'Cinzel', serif; font-size: .78rem; max-width: 190px; padding: 6px 28px 6px 9px; }
+.filter-select:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 10px rgba(212,168,67,.3); }
+.filter-select option { background: var(--dark-wood); color: var(--parchment); }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fade-in 0.3s ease; }
 @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
@@ -419,6 +436,16 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   transform: translateY(-2px);
 }
 
+/* Post quest modal */
+.modal.post-quest-shell { max-width: 760px; }
+.post-quest-modal .form-row { align-items: flex-end; }
+.post-quest-modal .form-group { min-width: 150px; }
+.post-quest-modal .quest-name-group, .post-quest-modal .quest-description-group { flex: 1 1 100%; }
+.post-quest-modal .form-group label span { color: var(--parchment-dark); font-family: 'IM Fell English', serif; font-weight: 400; text-transform: none; }
+.post-quest-actions { align-items: center; flex-wrap: wrap; }
+.post-quest-actions .btn-template { font-size: .75rem; letter-spacing: 1px; padding: 9px 12px; }
+.post-quest-actions .btn-cancel { margin-left: auto; }
+
 /* Template Manager Styles */
 .template-list {
   display: flex;
@@ -549,6 +576,8 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 @media (max-width: 600px) {
   .form-row { flex-direction: column; }
   .form-group { min-width: 100%; }
+  .quest-entry-summary { align-items: flex-start; flex-direction: column; }
+  .quest-entry-actions { justify-content: flex-start; width: 100%; }
   .stats-bar { gap: 10px; }
   .header-title { font-size: 1.6rem; }
   .modal-inner { padding: 20px; }
@@ -608,6 +637,37 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   max-height: 300px;
   overflow-y: auto;
 }
+
+/* Realm map */
+.modal.realm-map-shell { max-width: 1040px; }
+.realm-map-shell .modal-inner { padding: 0; }
+.realm-map-shell .modal-inner::before { display: none; }
+.realm-map-modal { overflow: hidden; background: #d3b67f; }
+.realm-map-topbar { background: linear-gradient(90deg, rgba(28,17,10,.96), rgba(61,39,21,.92)); border-bottom: 1px solid rgba(212,168,67,.5); color: var(--parchment); display: flex; align-items: center; justify-content: space-between; padding: 17px 22px; }
+.realm-map-topbar h2 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.45rem; margin-top: 2px; }
+.realm-map-kicker { color: var(--gold-light); font-family: 'Cinzel', serif; font-size: .67rem; letter-spacing: 1.2px; text-transform: uppercase; }
+.realm-map-stage { background-image: linear-gradient(90deg, rgba(245,226,180,.1), rgba(43,26,12,.2)), url('/images/faded-realm-map.png'); background-position: center; background-size: cover; min-height: 530px; position: relative; }
+.realm-map-stage::before { background: radial-gradient(ellipse at center, transparent 28%, rgba(31,18,8,.38)); content: ''; inset: 0; pointer-events: none; position: absolute; }
+.realm-map-locations { align-content: center; display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(150px, 200px)); min-height: 530px; padding: 32px 5%; position: relative; width: 59%; z-index: 1; }
+.realm-map-location { background: rgba(247,227,181,.86); border: 1px solid rgba(93,57,23,.7); box-shadow: 0 5px 12px rgba(40,24,10,.28); color: #2c1810; cursor: pointer; font-family: 'IM Fell English', serif; min-height: 90px; padding: 12px; text-align: center; transform: rotate(-1deg); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.realm-map-location:nth-child(even) { transform: rotate(1deg); }
+.realm-map-location:hover, .realm-map-location.active { background: #fff0c5; box-shadow: 0 0 0 3px rgba(212,168,67,.4), 0 6px 15px rgba(40,24,10,.3); transform: translateY(-3px) rotate(0); }
+.realm-map-location > span, .realm-map-location > strong, .realm-map-location > small { display: block; }
+.realm-map-location > span { font-size: 1.55rem; margin-bottom: 3px; }
+.realm-map-location > strong { font-family: 'Cinzel', serif; font-size: .9rem; }
+.realm-map-location > small { color: #6a523a; font-family: 'Cinzel', serif; font-size: .65rem; margin-top: 4px; }
+.realm-map-drawer { background: rgba(31,19,11,.91); border-left: 1px solid rgba(212,168,67,.48); bottom: 0; box-shadow: -12px 0 28px rgba(26,15,8,.35); color: var(--parchment); display: flex; flex-direction: column; padding: 25px; position: absolute; right: 0; top: 0; width: 41%; z-index: 2; }
+.realm-map-drawer h3 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.55rem; margin: 5px 0; }
+.realm-map-drawer > p { color: var(--parchment-dark); font-size: .95rem; margin-bottom: 16px; }
+.realm-map-quest { background: rgba(244,228,193,.08); border-left: 3px solid var(--gold-dark); margin-bottom: 9px; padding: 12px; }
+.realm-map-quest strong, .realm-map-quest span { display: block; }
+.realm-map-quest strong { color: var(--parchment); font-size: 1rem; font-weight: 400; }
+.realm-map-quest span { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .67rem; margin-top: 3px; }
+.realm-map-empty { color: var(--parchment-dark); font-style: italic; padding: 14px 0; }
+.realm-map-progress { color: var(--gold-light); display: flex; font-family: 'Cinzel', serif; font-size: .72rem; justify-content: space-between; margin-top: auto; }
+.realm-map-progress-track { background: rgba(244,228,193,.18); height: 8px; margin-top: 8px; overflow: hidden; }
+.realm-map-progress-track span { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); display: block; height: 100%; transition: width .25s ease; }
+@media (max-width: 720px) { .modal.realm-map-shell { max-width: 600px; } .realm-map-stage { min-height: 720px; } .realm-map-locations { grid-template-columns: repeat(2, minmax(115px, 1fr)); min-height: 360px; padding: 22px; width: 100%; } .realm-map-drawer { min-height: 360px; top: auto; width: 100%; } }
 
 .share-user-item {
   background: rgba(26, 15, 10, 0.6);

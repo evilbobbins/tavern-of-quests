@@ -5,8 +5,8 @@ export function createQuestCard(quest, category) {
   const card = document.createElement('div');
   card.className = `quest-card priority-${quest.priority}`;
   
-  const tagClass = category.builtin 
-    ? (category.id === 'household' ? 'tag-household' : 'tag-technology')
+  const tagClass = category.builtin
+    ? (category.id === 'household' ? 'tag-household' : category.id === 'academy' ? 'tag-academy' : 'tag-technology')
     : 'tag-custom';
   
   // Check if there are other users to share with

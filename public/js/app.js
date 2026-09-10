@@ -11,6 +11,7 @@ import { openCreateCharModal } from './components/CreateCharacter.js';
 import { openTemplateManager, openTemplatePicker } from './components/TemplateManager.js';
 import { openRealmDashboard } from './components/RealmDashboard.js';
 import { openBackupManager } from './components/BackupManager.js';
+import { openRealmMap } from './components/RealmMap.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -58,7 +59,65 @@ window.openTemplateManager = openTemplateManager;
 window.openTemplatePicker = openTemplatePicker;
 window.openRealmDashboard = openRealmDashboard;
 window.openBackupManager = openBackupManager;
+window.openRealmMap = () => openRealmMap(window.state);
 window.closeTopModal = closeTopModal;
+
+function openPostQuestModal(startWithTemplate = false) {
+  const categories = getAllCategories(window.state.customCategories);
+  const categoryOptions = categories.map(category =>
+    `<option value="${escapeAttr(category.id)}">${category.emoji} ${escapeHtml(category.name)}</option>`
+  ).join('');
+  const overlay = createModal(`
+    <div class="post-quest-modal" role="dialog" aria-modal="true" aria-label="Post a new quest">
+      <div class="modal-header">
+        <h3 class="modal-title">📜 Post a New Quest</h3>
+        <button class="modal-close" type="button" onclick="window.closeTopModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="form-row">
+        <div class="form-group quest-name-group">
+          <label for="quest-name">Quest Name</label>
+          <input type="text" id="quest-name" placeholder="e.g., Slay the Dust Dragon..." maxlength="100" autofocus>
+        </div>
+        <div class="form-group">
+          <label for="quest-type">Quest Type</label>
+          <select id="quest-type"><option value="main">⚔️ Main Quest</option><option value="side">🗺️ Side Quest</option></select>
+        </div>
+        <div class="form-group">
+          <label for="quest-category">Location</label>
+          <select id="quest-category">${categoryOptions}</select>
+        </div>
+        <div class="form-group">
+          <label for="quest-priority">Priority</label>
+          <select id="quest-priority"><option value="critical">💀 Critical</option><option value="high">🔴 High</option><option value="medium" selected>🟠 Medium</option><option value="low">🟢 Low</option></select>
+        </div>
+        <div class="form-group">
+          <label for="quest-xp">Difficulty (XP)</label>
+          <select id="quest-xp"><option value="10">Easy (10 XP)</option><option value="25" selected>Medium (25 XP)</option><option value="50">Hard (50 XP)</option><option value="100">Epic (100 XP)</option></select>
+        </div>
+        <div class="form-group">
+          <label for="quest-due-date">Due Date</label>
+          <input type="date" id="quest-due-date">
+        </div>
+        <div class="form-group quest-description-group">
+          <label for="quest-desc">Description <span>(optional)</span></label>
+          <input type="text" id="quest-desc" placeholder="Brief details..." maxlength="200">
+        </div>
+      </div>
+      <div class="modal-actions post-quest-actions">
+        <button class="btn-template" type="button" onclick="window.openTemplatePicker()">📋 Use Template</button>
+        <button class="btn-template" type="button" onclick="window.saveQuestFormAsTemplate()">💾 Save as Template</button>
+        <button class="btn-modal btn-cancel" type="button" onclick="window.closeTopModal()">Cancel</button>
+        <button class="btn-modal btn-save" type="button" id="btn-post-quest">⚔️ Post Quest</button>
+      </div>
+    </div>
+  `, closeTopModal);
+  overlay.querySelector('.modal').classList.add('post-quest-shell');
+  overlay.querySelector('#btn-post-quest').addEventListener('click', handleAddQuest);
+  overlay.querySelector('#quest-name').focus();
+  if (startWithTemplate) window.openTemplatePicker();
+}
+
+window.openPostQuestModal = openPostQuestModal;
 
 async function init() {
   createParticles();
@@ -67,6 +126,8 @@ async function init() {
   document.getElementById('btn-create-char')?.addEventListener('click', openCreateCharModal);
   document.getElementById('btn-roster')?.addEventListener('click', showCharacterSelect);
   document.getElementById('btn-realm')?.addEventListener('click', () => window.openRealmDashboard());
+  document.getElementById('btn-realm-map')?.addEventListener('click', () => window.openRealmMap());
+  document.getElementById('btn-open-post-quest')?.addEventListener('click', () => window.openPostQuestModal());
   document.getElementById('btn-admin')?.addEventListener('click', () => openAdminPanel(
     window.connectionStatus,
     window.lastSaveError,
@@ -74,7 +135,6 @@ async function init() {
     window.state
   ));
   document.getElementById('current-user-display')?.addEventListener('click', showCharacterSelect);
-  document.getElementById('btn-post-quest')?.addEventListener('click', handleAddQuest);
   document.getElementById('btn-clear')?.addEventListener('click', handleClearCompleted);
   
   document.getElementById('btn-prev-page')?.addEventListener('click', () => {
@@ -226,9 +286,12 @@ function renderCategoryDropdown() {
 function renderStats() {
   document.getElementById('player-level').textContent = window.state.level;
   document.getElementById('player-xp').textContent = window.state.xp;
-  document.getElementById('quests-completed').textContent = window.state.completed.length;
-  document.getElementById('quests-active').textContent = window.state.quests.length;
-  document.getElementById('player-streak').textContent = window.state.streak;
+  const completed = document.getElementById('quests-completed');
+  const active = document.getElementById('quests-active');
+  const streak = document.getElementById('player-streak');
+  if (completed) completed.textContent = window.state.completed.length;
+  if (active) active.textContent = window.state.quests.length;
+  if (streak) streak.textContent = window.state.streak;
   document.getElementById('xp-bar').style.width = ((window.state.xp % CONFIG.XP_PER_LEVEL) / CONFIG.XP_PER_LEVEL * 100) + '%';
 }
 
@@ -382,6 +445,7 @@ async function handleAddQuest() {
       const dueInput = document.getElementById('quest-due-date');
       if (dueInput) dueInput.value = '';
       showToast('📜', 'Quest Posted!', `"${name}" added.`);
+      if (nameInput.closest('.post-quest-modal')) closeTopModal();
     } else {
       window.state.quests.pop();
       window.renderAll(); // Rollback UI

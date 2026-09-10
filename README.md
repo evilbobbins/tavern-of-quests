@@ -40,7 +40,7 @@
 
 ### 🏷️ Custom Categories & Emoji Library
 
-- **Built-in Categories**: Starts with "Household" and "Technology".
+- **Built-in Categories**: Starts with **The Castle**, **The Wizard's Lair**, and **Mooncrest Academy**.
 - **Custom Categories**: Users can create unlimited custom categories (e.g., "Garden", "Pets", "Work").
 - **Emoji Picker**: A built-in, scrollable library of 300+ Unicode emojis, organized by theme (Fantasy, Home, Tech, Nature, Animals, etc.), allowing users to assign unique icons to their custom categories.
 - **Safe Deletion**: If a category is deleted while in use, the system prompts the user to reassign affected quests to a new category before proceeding.

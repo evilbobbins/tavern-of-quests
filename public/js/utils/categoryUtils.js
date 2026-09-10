@@ -16,7 +16,7 @@ export function getCategoryById(id, customCategories = []) {
 export function getCategoryTagClass(category) {
   if (!category) return 'tag-custom';
   if (category.builtin) {
-    return category.id === 'household' ? 'tag-household' : 'tag-technology';
+    return category.id === 'household' ? 'tag-household' : category.id === 'academy' ? 'tag-academy' : 'tag-technology';
   }
   return 'tag-custom';
 }

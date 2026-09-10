@@ -1,6 +1,7 @@
 import { createQuestCard } from './QuestCard.js';
 import { getAllCategories, getCategoryById } from '../utils/categoryUtils.js';
 import { CONFIG } from '../config.js';
+import { escapeHtml } from '../utils/helpers.js';
 
 export function renderQuestBoard(quests, filters, onFilterChange) {
   if (!Array.isArray(quests)) {
@@ -66,20 +67,16 @@ function renderFilterTabs(type, activeFilter) {
   if (!container) return;
   
   const categories = getAllCategories(window.state?.customCategories || []);
-  let html = `<div class="filter-tab ${activeFilter === 'all' ? 'active' : ''}" onclick="window.setFilterCallback('${type}', 'all', this)">All</div>`;
-  
-  for (const cat of categories) {
-    html += `<div class="filter-tab ${activeFilter === cat.id ? 'active' : ''}" onclick="window.setFilterCallback('${type}', '${cat.id}', this)">${cat.emoji} ${cat.name}</div>`;
-  }
-  
-  container.innerHTML = html;
+  const label = type === 'main' ? 'Filter main quests' : 'Filter side quests';
+  const options = [
+    `<option value="all">All locations</option>`,
+    ...categories.map(category => `<option value="${category.id}" ${activeFilter === category.id ? 'selected' : ''}>${category.emoji} ${escapeHtml(category.name)}</option>`)
+  ].join('');
+  container.innerHTML = `<label class="filter-select-label"><span>Show</span><select class="filter-select" aria-label="${label}" onchange="window.setFilterCallback('${type}', this.value)">${options}</select></label>`;
 }
 
-window.setFilterCallback = (type, filter, el) => {
+window.setFilterCallback = (type, filter) => {
   if (window.setFilterCallbackHandler) {
     window.setFilterCallbackHandler(type, filter);
-    const tabs = el.parentElement.querySelectorAll('.filter-tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
   }
 };
