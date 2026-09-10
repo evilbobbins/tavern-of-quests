@@ -76,17 +76,12 @@ async function init() {
     }
   });
   
+  // Initial load only - no more interval-based refresh
   if (window.currentUserId) {
     await loadAppState();
   } else {
     showCharacterSelect();
   }
-  
-  setInterval(() => {
-    if (window.connectionStatus !== 'offline' && window.currentUserId) {
-      loadAppState();
-    }
-  }, 30000);
 }
 
 async function loadAppState() {
@@ -264,7 +259,7 @@ async function handleAddQuest() {
     };
     
     window.state.quests.push(quest);
-    window.renderAll();
+    window.renderAll(); // Immediate UI update
     
     const saved = await saveStateWrapper();
     
@@ -274,7 +269,7 @@ async function handleAddQuest() {
       showToast('📜', 'Quest Posted!', `"${name}" added.`);
     } else {
       window.state.quests.pop();
-      window.renderAll();
+      window.renderAll(); // Rollback UI
       showToast('⚠️', 'Save Failed', 'Could not save quest.');
     }
   } catch (err) {
@@ -306,7 +301,7 @@ window.toggleQuest = async (id) => {
     window.state.streak = window.state.lastCompletedDate === yesterday ? window.state.streak + 1 : 1;
     window.state.lastCompletedDate = today;
   }
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
     showToast('⚔️', 'Quest Completed!', `+${quest.xp} XP earned!`);
@@ -316,7 +311,7 @@ window.toggleQuest = async (id) => {
     window.state.quests.splice(idx, 0, quest);
     window.state.xp -= quest.xp;
     window.state.level = oldLevel;
-    window.renderAll();
+    window.renderAll(); // Rollback UI
   }
 };
 
@@ -326,13 +321,13 @@ window.deleteQuest = async (id) => {
   const quest = window.state.quests[idx];
   if (!confirm(`Remove "${quest.name}"?`)) return;
   window.state.quests.splice(idx, 1);
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
     showToast('🗑️', 'Quest Removed', `"${quest.name}" removed.`);
   } else {
     window.state.quests.splice(idx, 0, quest);
-    window.renderAll();
+    window.renderAll(); // Rollback UI
   }
 };
 
@@ -415,14 +410,14 @@ window.saveEdit = async (id) => {
   quest.xp = parseInt(document.getElementById('edit-xp').value);
   quest.description = document.getElementById('edit-desc').value.trim();
   quest.updatedAt = new Date().toISOString();
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
     closeTopModal();
     showToast('✏️', 'Quest Updated!', `"${name}" modified.`);
   } else {
     Object.assign(quest, backup);
-    window.renderAll();
+    window.renderAll(); // Rollback UI
   }
 };
 
@@ -437,9 +432,9 @@ window.confirmRepeatQuest = async (questId) => {
   };
   window.state.quests.push(newQuest);
   closeTopModal();
+  window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
-    window.renderAll();
     showToast('🔄', 'Quest Repeated!', `"${originalQuest.name}" added to active quests.`);
   }
 };
@@ -452,7 +447,7 @@ window.archiveQuest = async (questId) => {
   window.state.archived.push(quest);
   
   closeTopModal();
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   
   const saved = await saveStateWrapper();
   if (saved) {
@@ -460,7 +455,7 @@ window.archiveQuest = async (questId) => {
   } else {
     window.state.archived.pop();
     window.state.completed.push(quest);
-    window.renderAll();
+    window.renderAll(); // Rollback UI
     showToast('⚠️', 'Archive Failed', 'Could not save archive.');
   }
 };
@@ -472,7 +467,7 @@ window.restoreQuest = async (questId) => {
   window.state.archived = window.state.archived.filter(q => q.id !== questId);
   window.state.completed.push(quest);
   
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   
   const saved = await saveStateWrapper();
   if (saved) {
@@ -480,7 +475,7 @@ window.restoreQuest = async (questId) => {
   } else {
     window.state.completed.pop();
     window.state.archived.push(quest);
-    window.renderAll();
+    window.renderAll(); // Rollback UI
     showToast('⚠️', 'Restore Failed', 'Could not save restore.');
   }
 };
@@ -494,14 +489,14 @@ window.deleteArchivedQuest = async (questId) => {
   const backup = [...window.state.archived];
   window.state.archived = window.state.archived.filter(q => q.id !== questId);
   
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   
   const saved = await saveStateWrapper();
   if (saved) {
     showToast('🗑️', 'Quest Deleted', `"${quest.name}" permanently deleted.`);
   } else {
     window.state.archived = backup;
-    window.renderAll();
+    window.renderAll(); // Rollback UI
     showToast('⚠️', 'Delete Failed', 'Could not save deletion.');
   }
 };
@@ -514,14 +509,14 @@ window.clearArchived = async () => {
   const backup = [...window.state.archived];
   window.state.archived = [];
   
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   
   const saved = await saveStateWrapper();
   if (saved) {
     showToast('🧹', 'Archive Cleared', `${count} archived quest(s) removed.`);
   } else {
     window.state.archived = backup;
-    window.renderAll();
+    window.renderAll(); // Rollback UI
     showToast('⚠️', 'Clear Failed', 'Could not save changes.');
   }
 };
@@ -579,13 +574,13 @@ async function handleClearCompleted() {
   const backup = [...window.state.completed];
   window.state.completed = [];
   window.completedPage = 0;
-  window.renderAll();
+  window.renderAll(); // Immediate UI update
   const saved = await saveStateWrapper();
   if (saved) {
     showToast('🧹', 'Board Cleared', `${count} quest(s) removed.`);
   } else {
     window.state.completed = backup;
-    window.renderAll();
+    window.renderAll(); // Rollback UI
   }
 }
 
@@ -753,7 +748,7 @@ window.createCategory = async () => {
     window.selectedCategoryEmoji = null;
     showToast('🏷️', 'Category Created!', `"${name}" added.`);
     window.openCategoryManager();
-    window.renderAll();
+    window.renderAll(); // Immediate UI update
   } else {
     window.state.customCategories.pop();
   }
@@ -819,7 +814,7 @@ async function deleteCategory(catId) {
   if (saved) {
     showToast('🗑️', 'Category Deleted', 'Category removed.');
     window.openCategoryManager();
-    window.renderAll();
+    window.renderAll(); // Immediate UI update
   } else {
     showToast('⚠️', 'Delete Failed', 'Could not save changes.');
   }
@@ -827,4 +822,5 @@ async function deleteCategory(catId) {
 
 window.closeModal = closeModal;
 
+// Initialize app - NO MORE setInterval
 init();
