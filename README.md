@@ -1,4 +1,4 @@
-# 📜 The Tavern of Quests - Single character editon
+# 📜 The Tavern of Quests
 
 ## 🏰 Overview
 
@@ -9,6 +9,7 @@
 ## ⚔️ Core Features
 
 ## 🧙🧝 Multi-User System
+
 - **Character Creation**: Create multiple adventurers with custom names and avatar emojis
 - **Character Selection**: Switch between characters with a dedicated selection screen
 - **Character Management**: Edit character names and avatars, or delete characters entirely
