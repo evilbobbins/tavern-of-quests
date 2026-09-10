@@ -9,6 +9,8 @@ import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
 import { createModal, closeModal, closeTopModal } from './components/Modal.js';
 import { openCreateCharModal } from './components/CreateCharacter.js';
 import { openTemplateManager, openTemplatePicker } from './components/TemplateManager.js';
+import { openRealmDashboard } from './components/RealmDashboard.js';
+import { openBackupManager } from './components/BackupManager.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -34,16 +36,37 @@ window.lastSaveError = null;
 window.saveQueue = Promise.resolve();
 window.otherUsersCount = 0; // Track number of other users for share button visibility
 
+function updateConnectionIndicator() {
+  const indicator = document.getElementById('connection-indicator');
+  const label = document.getElementById('connection-label');
+  if (!indicator || !label) return;
+  const details = {
+    online: { label: 'Saved', title: 'All changes are saved to the shared tavern.' },
+    syncing: { label: 'Saving', title: 'Saving changes to the shared tavern…' },
+    offline: { label: 'Offline', title: window.lastSaveError || 'The tavern server cannot be reached.' }
+  }[window.connectionStatus] || { label: 'Offline', title: 'The tavern server cannot be reached.' };
+  indicator.className = `connection-indicator status-${window.connectionStatus}`;
+  indicator.title = details.title;
+  indicator.setAttribute('aria-label', `Server connection: ${details.label}`);
+  label.textContent = details.label;
+}
+
+window.updateConnectionIndicator = updateConnectionIndicator;
+
 // Make template and modal functions globally available
 window.openTemplateManager = openTemplateManager;
 window.openTemplatePicker = openTemplatePicker;
+window.openRealmDashboard = openRealmDashboard;
+window.openBackupManager = openBackupManager;
 window.closeTopModal = closeTopModal;
 
 async function init() {
   createParticles();
+  updateConnectionIndicator();
   
   document.getElementById('btn-create-char')?.addEventListener('click', openCreateCharModal);
   document.getElementById('btn-roster')?.addEventListener('click', showCharacterSelect);
+  document.getElementById('btn-realm')?.addEventListener('click', () => window.openRealmDashboard());
   document.getElementById('btn-admin')?.addEventListener('click', () => openAdminPanel(
     window.connectionStatus,
     window.lastSaveError,
@@ -93,6 +116,7 @@ async function loadAppState() {
   }
   
   window.connectionStatus = 'syncing';
+  updateConnectionIndicator();
   const data = await loadState(window.currentUserId);
   
   if (data) {
@@ -114,6 +138,7 @@ async function loadAppState() {
     }
     
     window.connectionStatus = 'online';
+    updateConnectionIndicator();
     window.lastSaveError = null;
     
     document.getElementById('char-select-screen').classList.add('hidden');
@@ -220,6 +245,7 @@ window.saveStateWrapper = saveStateWrapper;
 
 async function doSave() {
   window.connectionStatus = 'syncing';
+  updateConnectionIndicator();
   const maxRetries = 2;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -227,13 +253,12 @@ async function doSave() {
       if (result.success) {
         window.state._revision = result.revision;
         window.connectionStatus = 'online';
+        updateConnectionIndicator();
         window.lastSaveError = null;
         return true;
       } else {
         if (result.conflict) {
-          await loadAppState();
-          showToast('⚠️', 'Changes Reloaded', 'Another session saved first, so the latest state was loaded.');
-          return false;
+          return await resolveSaveConflict(JSON.parse(JSON.stringify(window.state)));
         }
         throw new Error(result.error || 'Save failed');
       }
@@ -245,11 +270,68 @@ async function doSave() {
         continue;
       }
       window.connectionStatus = 'offline';
+      updateConnectionIndicator();
       showToast('⚠️', 'Save Failed', 'Could not save: ' + err.message);
       return false;
     }
   }
   return false;
+}
+
+function mergeQuestCollections(remote, local) {
+  const localIds = new Set(['quests', 'completed', 'archived'].flatMap(key => (local[key] || []).map(quest => quest.id)));
+  return ['quests', 'completed', 'archived'].reduce((merged, key) => {
+    merged[key] = [...(remote[key] || []).filter(quest => !localIds.has(quest.id)), ...(local[key] || [])];
+    return merged;
+  }, {});
+}
+
+function showConflictChoice() {
+  return new Promise(resolve => {
+    const content = `
+      <div class="modal-header"><h3 class="modal-title">⚔️ The Realm Changed</h3><button class="modal-close" onclick="window.chooseConflictResolution('latest')">&times;</button></div>
+      <p style="color:var(--parchment-dark);line-height:1.55;">Another session saved this adventurer while you were working. Choose how to continue—nothing is overwritten until you decide.</p>
+      <div class="modal-actions" style="flex-direction:column;gap:10px;">
+        <button class="btn-modal btn-save" onclick="window.chooseConflictResolution('merge')">🧩 Merge My Changes</button>
+        <button class="btn-modal btn-cancel" onclick="window.chooseConflictResolution('latest')">↻ Use Latest Realm State</button>
+      </div>`;
+    createModal(content);
+    window.chooseConflictResolution = choice => { closeTopModal(); resolve(choice); };
+  });
+}
+
+async function resolveSaveConflict(localState) {
+  const remoteState = await loadState(window.currentUserId);
+  if (!remoteState) {
+    showToast('⚠️', 'Conflict Unavailable', 'Could not load the latest realm state.');
+    return false;
+  }
+  const choice = await showConflictChoice();
+  if (choice === 'latest') {
+    window.state = { ...window.state, ...remoteState };
+    window.renderAll();
+    showToast('↻', 'Latest State Loaded', 'Your board now matches the realm.');
+    return true;
+  }
+  const merged = {
+    ...remoteState,
+    ...localState,
+    ...mergeQuestCollections(remoteState, localState),
+    templates: [...new Map([...(remoteState.templates || []), ...(localState.templates || [])].map(item => [item.id, item])).values()],
+    activity: [...(localState.activity || []), ...(remoteState.activity || [])].slice(0, 20),
+    _revision: remoteState._revision
+  };
+  const result = await saveState(window.currentUserId, merged);
+  if (result.success) {
+    window.state = { ...merged, _revision: result.revision };
+    window.renderAll();
+    showToast('🧩', 'Changes Merged', 'Your updates and the latest realm state were saved together.');
+    return true;
+  }
+  window.state = { ...window.state, ...remoteState };
+  window.renderAll();
+  showToast('⚠️', 'Merge Failed', 'The latest realm state was loaded instead.');
+  return true;
 }
 
 async function handleAddQuest() {
@@ -268,6 +350,7 @@ async function handleAddQuest() {
   const priority = document.getElementById('quest-priority')?.value || 'medium';
   const xp = parseInt(document.getElementById('quest-xp')?.value || '25');
   const desc = descInput ? descInput.value.trim() : '';
+  const dueDate = document.getElementById('quest-due-date')?.value || null;
   
   if (!name) {
     showToast('⚠️', 'Quest Name Required', 'Every quest needs a name!');
@@ -281,7 +364,7 @@ async function handleAddQuest() {
   try {
     const quest = {
       id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-      name, type, category, priority, xp,
+      name, type, category, priority, xp, dueDate,
       description: desc,
       createdAt: new Date().toISOString(),
       completedAt: null
@@ -296,6 +379,8 @@ async function handleAddQuest() {
     if (saved) {
       if (nameInput) nameInput.value = '';
       if (descInput) descInput.value = '';
+      const dueInput = document.getElementById('quest-due-date');
+      if (dueInput) dueInput.value = '';
       showToast('📜', 'Quest Posted!', `"${name}" added.`);
     } else {
       window.state.quests.pop();
@@ -520,6 +605,10 @@ window.openEditModal = (id) => {
       <label>Description</label>
       <input type="text" id="edit-desc" value="${escapeAttr(quest.description || '')}" maxlength="200">
     </div>
+    <div class="form-group" style="margin-top:14px;">
+      <label>Due Date</label>
+      <input type="date" id="edit-due-date" value="${escapeAttr(quest.dueDate || '')}">
+    </div>
     <div class="modal-actions">
       <button class="btn-modal btn-cancel" onclick="window.closeTopModal()">Cancel</button>
       <button class="btn-modal btn-save" onclick="window.saveEdit('${quest.id}')">💾 Save</button>
@@ -547,6 +636,7 @@ window.saveEdit = async (id) => {
   quest.priority = document.getElementById('edit-priority').value;
   quest.xp = parseInt(document.getElementById('edit-xp').value);
   quest.description = document.getElementById('edit-desc').value.trim();
+  quest.dueDate = document.getElementById('edit-due-date').value || null;
   quest.updatedAt = new Date().toISOString();
   recordActivity('✏️', `Updated “${name}”`);
   window.renderAll(); // Immediate UI update

@@ -7,12 +7,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'users.json');
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
+const BACKUP_INTERVAL_HOURS = Math.max(1, Number.parseInt(process.env.BACKUP_INTERVAL_HOURS || '24', 10) || 24);
+const BACKUP_RETENTION = Math.max(1, Number.parseInt(process.env.BACKUP_RETENTION || '14', 10) || 14);
 let writeQueue = Promise.resolve();
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static('public'));
 
-async function ensureDataDir() { await fs.mkdir(DATA_DIR, { recursive: true }); }
+async function ensureDataDir() { await fs.mkdir(DATA_DIR, { recursive: true }); await fs.mkdir(BACKUP_DIR, { recursive: true }); }
 async function loadUsers() {
   try {
     const data = await fs.readFile(DATA_FILE, 'utf8');
@@ -25,9 +28,35 @@ async function loadUsers() {
   }
 }
 async function saveUsers(users) {
+  await createScheduledBackup();
+  await writeUsers(users);
+}
+async function writeUsers(users) {
   const temporaryFile = `${DATA_FILE}.${crypto.randomUUID()}.tmp`;
   await fs.writeFile(temporaryFile, JSON.stringify(users, null, 2), 'utf8');
   await fs.rename(temporaryFile, DATA_FILE);
+}
+async function writeBackup(users, prefix) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const name = `${prefix}-${stamp}.json`;
+  await fs.writeFile(path.join(BACKUP_DIR, name), JSON.stringify(users, null, 2), 'utf8');
+  await pruneBackups();
+  return name;
+}
+async function pruneBackups() {
+  const backups = (await fs.readdir(BACKUP_DIR)).filter(name => name.endsWith('.json')).sort();
+  await Promise.all(backups.slice(0, -BACKUP_RETENTION).map(name => fs.unlink(path.join(BACKUP_DIR, name))));
+}
+async function createScheduledBackup() {
+  try {
+    const fileInfo = await fs.stat(DATA_FILE);
+    if (Date.now() - fileInfo.mtimeMs < BACKUP_INTERVAL_HOURS * 60 * 60 * 1000) return;
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await fs.copyFile(DATA_FILE, path.join(BACKUP_DIR, `automatic-${stamp}.json`));
+    await pruneBackups();
+  } catch (err) {
+    if (err.code !== 'ENOENT') console.error('Automated backup failed:', err);
+  }
 }
 function withUserMutation(mutator) {
   const operation = writeQueue.then(async () => mutator(await loadUsers()));
@@ -39,7 +68,8 @@ function validQuest(quest) {
   return quest && typeof quest === 'object' && validText(quest.id, 80) && validText(quest.name, 100)
     && ['main', 'side'].includes(quest.type) && ['critical', 'high', 'medium', 'low'].includes(quest.priority)
     && Number.isFinite(quest.xp) && [10, 25, 50, 100].includes(quest.xp)
-    && (!quest.description || (typeof quest.description === 'string' && quest.description.length <= 200));
+    && (!quest.description || (typeof quest.description === 'string' && quest.description.length <= 200))
+    && (quest.dueDate === undefined || quest.dueDate === null || /^\d{4}-\d{2}-\d{2}$/.test(quest.dueDate));
 }
 function validState(state) {
   if (!state || typeof state !== 'object' || Array.isArray(state)) return 'State must be an object.';
@@ -53,6 +83,16 @@ function validState(state) {
   if (!Number.isFinite(state.level) || state.level < 1 || state.level > 100001) return 'Invalid level value.';
   return null;
 }
+function validBackupUsers(users) {
+  return users && typeof users === 'object' && !Array.isArray(users) && Object.values(users).every(user =>
+    user && typeof user === 'object' && validText(user.name, 50) && typeof user.avatar === 'string'
+    && user.avatar.length <= 16 && !validState(user.state)
+  );
+}
+function backupPath(name) {
+  return typeof name === 'string' && /^(automatic|manual|pre-restore)-[\w-]+\.json$/.test(name)
+    ? path.join(BACKUP_DIR, name) : null;
+}
 function defaultState() {
   return { quests: [], completed: [], archived: [], templates: [], activity: [], xp: 0, level: 1, streak: 0,
     lastCompletedDate: null, filters: { main: 'all', side: 'all' }, customCategories: [] };
@@ -61,6 +101,36 @@ function defaultState() {
 app.get('/api/health', async (req, res) => {
   try { await ensureDataDir(); await fs.access(DATA_DIR, fs.constants.W_OK); res.json({ success: true, status: 'healthy' }); }
   catch { res.status(503).json({ success: false, error: 'Data directory is not writable' }); }
+});
+app.get('/api/backups', async (req, res, next) => {
+  try {
+    const backups = await Promise.all((await fs.readdir(BACKUP_DIR)).filter(name => backupPath(name)).sort().reverse().map(async name => {
+      const info = await fs.stat(path.join(BACKUP_DIR, name));
+      return { name, createdAt: info.mtime.toISOString(), size: info.size, type: name.split('-')[0] };
+    }));
+    res.json({ success: true, intervalHours: BACKUP_INTERVAL_HOURS, retention: BACKUP_RETENTION, backups });
+  } catch (err) { next(err); }
+});
+app.post('/api/backups', async (req, res, next) => {
+  try {
+    const backup = await withUserMutation(async users => ({ name: await writeBackup(users, 'manual') }));
+    res.status(201).json({ success: true, backup });
+  } catch (err) { next(err); }
+});
+app.post('/api/backups/:name/restore', async (req, res, next) => {
+  const sourcePath = backupPath(req.params.name);
+  if (!sourcePath) return res.status(400).json({ success: false, error: 'Invalid backup name.' });
+  try {
+    const result = await withUserMutation(async currentUsers => {
+      const restoredUsers = JSON.parse(await fs.readFile(sourcePath, 'utf8'));
+      if (!validBackupUsers(restoredUsers)) return { ok: false, error: 'That backup is not a valid Tavern snapshot.' };
+      const safetyBackup = await writeBackup(currentUsers, 'pre-restore');
+      await writeUsers(restoredUsers);
+      return { ok: true, safetyBackup };
+    });
+    if (!result.ok) return res.status(400).json({ success: false, error: result.error });
+    res.json({ success: true, safetyBackup: result.safetyBackup });
+  } catch (err) { next(err); }
 });
 app.get('/api/users', async (req, res, next) => {
   try {

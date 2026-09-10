@@ -31,6 +31,9 @@
         <span class="current-user-avatar" id="current-user-avatar">&#129489;&#8205;&#127806;</span>
         <span id="current-user-name">Adventurer</span>
       </div>
+      <div class="connection-indicator status-offline" id="connection-indicator" role="status" aria-live="polite" title="Server connection: Offline">
+        <span class="connection-dot"></span><span id="connection-label">Offline</span>
+      </div>
       <div class="stat-item"><span class="stat-icon">&#127984;</span><span>Lvl:</span><span class="stat-value" id="player-level">1</span></div>
       <div class="stat-item"><span class="stat-icon">&#10024;</span><span>XP:</span><span class="stat-value" id="player-xp">0</span>
         <div class="xp-bar-container"><div class="xp-bar-fill" id="xp-bar" style="width: 0%"></div></div>
@@ -39,6 +42,7 @@
       <div class="stat-item"><span class="stat-icon">&#9876;&#65039;</span><span>Active:</span><span class="stat-value" id="quests-active">0</span></div>
       <div class="stat-item"><span class="stat-icon">&#128293;</span><span>Streak:</span><span class="stat-value" id="player-streak">0</span></div>
       <button class="roster-btn" id="btn-roster">&#128737;&#65039; Roster</button>
+      <button class="roster-btn" id="btn-realm">🌍 Realm Dashboard</button>
       <button class="admin-trigger" id="btn-admin">&#9881;&#65039; Tavern Keeper</button>
     </div>
     
@@ -82,6 +86,10 @@
           <div class="form-group" style="flex:2;">
             <label>Description (optional)</label>
             <input type="text" id="quest-desc" placeholder="Brief details..." maxlength="200">
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="quest-due-date">
           </div>
           <div class="quest-form-actions">
             <button class="btn-add" id="btn-post-quest">&#9876;&#65039; Post Quest</button>

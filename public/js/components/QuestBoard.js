@@ -22,11 +22,13 @@ export function renderQuestBoard(quests, filters, onFilterChange) {
     : sideQuests.filter(q => q.category === filters.side);
   
   const sortByPriority = (a, b) => {
+    const dueA = a?.dueDate ? new Date(`${a.dueDate}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
+    const dueB = b?.dueDate ? new Date(`${b.dueDate}T00:00:00`).getTime() : Number.MAX_SAFE_INTEGER;
     const pa = CONFIG.PRIORITY_ORDER[a?.priority] ?? 2;
     const pb = CONFIG.PRIORITY_ORDER[b?.priority] ?? 2;
     const dateA = a?.createdAt ? new Date(a.createdAt).getTime() : 0;
     const dateB = b?.createdAt ? new Date(b.createdAt).getTime() : 0;
-    return pa !== pb ? pa - pb : dateB - dateA;
+    return dueA !== dueB ? dueA - dueB : (pa !== pb ? pa - pb : dateB - dateA);
   };
 
   const sortedMain = [...mainFiltered].sort(sortByPriority);

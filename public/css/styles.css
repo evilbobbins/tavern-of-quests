@@ -54,6 +54,8 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 @keyframes title-glow { 0% { text-shadow: 0 0 10px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } 100% { text-shadow: 0 0 20px rgba(212,168,67,0.7), 0 0 40px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } }
 
 .stats-bar { position: relative; z-index: 1; background: linear-gradient(180deg, var(--dark-wood) 0%, #1a0f0a 100%); border-bottom: 2px solid var(--gold-dark); padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+.connection-indicator { align-items:center; border:1px solid rgba(212,168,67,.35); border-radius:20px; color:var(--parchment-dark); display:flex; font:700 .7rem 'Cinzel',serif; gap:6px; letter-spacing:.03em; padding:5px 9px; text-transform:uppercase; }
+.connection-dot { background:#e74c3c; border-radius:50%; box-shadow:0 0 7px currentColor; height:7px; width:7px; }.connection-indicator.status-online .connection-dot { background:#2ecc71; }.connection-indicator.status-syncing .connection-dot { background:var(--gold); animation:connection-pulse 1s ease-in-out infinite; }.connection-indicator.status-online { color:#85e8ad; }.connection-indicator.status-syncing { color:var(--gold); }.connection-indicator.status-offline { color:#ff9a95; }@keyframes connection-pulse { 50% { opacity:.35; transform:scale(.75); } }
 .stat-item { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--gold-light); }
 .stat-icon { font-size: 1.3rem; }
 .stat-value { font-weight: 700; color: var(--gold); font-size: 1.1rem; }
@@ -122,6 +124,9 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .priority-medium-badge { background: rgba(241,196,15,0.25); border: 1px solid var(--priority-medium); color: var(--priority-medium); }
 .priority-low-badge { background: rgba(46,204,113,0.25); border: 1px solid var(--priority-low); color: var(--priority-low); }
 .quest-xp { font-size: 0.75rem; color: var(--gold); font-family: 'Cinzel', serif; }
+.quest-due { font-size:.7rem; border:1px solid rgba(212,168,67,.45); border-radius:12px; color:var(--parchment-dark); padding:2px 8px; }
+.quest-due.is-due-soon { color:#f1c40f; border-color:#f1c40f; background:rgba(241,196,15,.1); }
+.quest-due.is-overdue { color:#ff746d; border-color:#e74c3c; background:rgba(231,76,60,.12); }
 .quest-actions { display: flex; gap: 4px; }
 .quest-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 4px 6px; border-radius: 4px; transition: all 0.3s ease; opacity: 0.6; }
 .quest-btn:hover { opacity: 1; transform: scale(1.15); }
@@ -137,6 +142,11 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .empty-action:hover { background:rgba(212,168,67,.24); }
 .toast-undo { align-self:center; background:transparent; border:1px solid var(--gold); border-radius:5px; color:var(--gold-light); cursor:pointer; font:700 .75rem 'Cinzel',serif; margin-left:10px; padding:6px 9px; text-transform:uppercase; }
 .toast-undo:hover { background:rgba(212,168,67,.18); }
+.realm-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:8px 0 20px; }
+.realm-stats > div { background:rgba(212,168,67,.08); border:1px solid var(--gold-dark); border-radius:8px; padding:12px; text-align:center; }
+.realm-stats strong { display:block; color:var(--gold); font:700 1.45rem 'Cinzel',serif; }.realm-stats span { color:var(--parchment-dark); font-size:.72rem; }
+.realm-member,.realm-reminder { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(212,168,67,.15); color:var(--parchment-dark); font-size:.82rem; }.realm-member strong,.realm-reminder strong { color:var(--parchment); }.realm-avatar { font-size:1.5rem; }.realm-reminder.urgent { color:#ff9a95; }
+.backup-note { color:var(--parchment-dark); font-size:.82rem; line-height:1.5; margin:0 0 14px; }.backup-list { max-height:320px; overflow:auto; border-top:1px solid rgba(212,168,67,.2); }.backup-item { align-items:center; border-bottom:1px solid rgba(212,168,67,.2); color:var(--parchment); display:flex; justify-content:space-between; padding:11px 4px; }.backup-meta { color:var(--parchment-dark); font-size:.75rem; margin-top:3px; }
 
 .completed-section { background: linear-gradient(135deg, rgba(44,24,16,0.85), rgba(26,15,10,0.9)); border: 2px solid var(--gold-dark); border-radius: 12px; padding: 24px; margin-bottom: 30px; position: relative; }
 .completed-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #27ae60, transparent); }

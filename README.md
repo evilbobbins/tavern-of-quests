@@ -60,6 +60,7 @@
 - **Node.js & Express**: A lightweight REST API handling state retrieval (`GET /api/state`) and updates (`PUT /api/state`).
 - **Atomic File Storage**: Data is stored in a `data.json` file. The server uses a dedicated `/app/data` directory to ensure safe, persistent writes.
 - **Health Checks**: Includes a `/api/health` endpoint to verify server status and directory write permissions.
+- **Automatic Backups**: Keeps scheduled snapshots in `/app/data/backups` before writes, with configurable interval and retention.
 
 ### 🐳 Docker & Deployment
 
@@ -88,6 +89,8 @@ The admin panel provides deep control over the realm's data and settings:
 **Environment Variables**
 PORT: Server port (default: 3000)
 NODE_ENV: Environment mode (default: production)
+BACKUP_INTERVAL_HOURS: Hours between automatic backups (default: 24)
+BACKUP_RETENTION: Number of automatic backups to retain (default: 14)
 
 **Application Constants**
 Located in public/js/config.js:

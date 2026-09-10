@@ -2,17 +2,23 @@ import { createModal } from './Modal.js';
 import { escapeHtml } from '../utils/helpers.js';
 
 export function openAdminPanel(connectionStatus, lastSaveError, customCategories, state) {
-  const statusColor = connectionStatus === 'online' ? '#2ecc71' : connectionStatus === 'syncing' ? 'var(--gold)' : '#e74c3c';
-  const statusLabel = connectionStatus.toUpperCase();
-  const errorInfo = lastSaveError 
-    ? `<div style="margin-top:8px; font-size:0.75rem; color:#e74c3c;">Last error: ${escapeHtml(lastSaveError)}</div>` 
-    : '';
   const customCatCount = (customCategories || []).length;
   const templateCount = (state.templates || []).length;
   const activity = (state.activity || []).slice(0, 6);
   const activityHtml = activity.length
     ? activity.map(item => `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,.15);">${escapeHtml(item.icon || '📜')} ${escapeHtml(item.message || '')}<span style="float:right;opacity:.55;font-size:.72rem;">${item.at ? new Date(item.at).toLocaleDateString() : ''}</span></div>`).join('')
     : '<div style="opacity:.7;font-style:italic;">Your recent quest activity will appear here.</div>';
+  const completedCount = (state.completed || []).length + (state.archived || []).length;
+  const achievements = [
+    completedCount >= 1 && '📜 First Quest — completed your first quest',
+    completedCount >= 10 && '🏅 Veteran Adventurer — completed 10 quests',
+    state.streak >= 7 && '🔥 Flame Keeper — a 7-day streak',
+    state.level >= 5 && '👑 Seasoned Hero — reached Level 5',
+    (state.templates || []).length >= 3 && '🧠 Ritual Master — created 3 templates'
+  ].filter(Boolean);
+  const achievementHtml = achievements.length
+    ? achievements.map(item => `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,.15);">${item}</div>`).join('')
+    : '<div style="opacity:.7;font-style:italic;">Complete quests, build a streak, and create templates to earn badges.</div>';
   
   const content = `
     <div class="modal-header">
@@ -24,14 +30,10 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
       <div class="admin-section-title">🕯️ Recent Activity</div>
       <div style="font-size:.82rem;color:var(--parchment-dark);">${activityHtml}</div>
     </div>
-    
+
     <div class="admin-section">
-      <div class="admin-section-title">🔮 Server Status</div>
-      <div style="padding:12px; background:rgba(26,15,10,0.6); border:1px solid var(--gold-dark); border-radius:8px; font-family:'Cinzel',serif; font-size:0.9rem;">
-        <div>Status: <span style="color:${statusColor}; font-weight:700;">${statusLabel}</span></div>
-        ${errorInfo}
-        <div style="margin-top:8px; font-size:0.8rem; opacity:0.7;">All changes are saved to the shared tavern server.</div>
-      </div>
+      <div class="admin-section-title">🏆 Achievements</div>
+      <div style="font-size:.82rem;color:var(--parchment-dark);">${achievementHtml}</div>
     </div>
     
     <div class="admin-section">
@@ -86,6 +88,11 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     <div class="admin-section">
       <div class="admin-section-title">📜 Backup & Restore</div>
       <div class="admin-grid">
+        <button class="admin-btn" onclick="window.openBackupManager()" style="grid-column:1/-1;">
+          <span class="admin-icon">🗄️</span>
+          <span>Open Backup Vault</span>
+          <span class="admin-label">Browse, create, or restore realm snapshots</span>
+        </button>
         <button class="admin-btn" onclick="window.adminExportData()">
           <span class="admin-icon">📤</span>
           <span>Export Data</span>
