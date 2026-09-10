@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Tavern of Quests</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='50%25' x='50%25' dominant-baseline='middle' text-anchor='middle' font-size='80'%3E%E2%9A%94%EF%B8%8F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="particles-container" id="particles"></div>
+  
+  <div id="char-select-screen">
+    <h1 class="char-select-title">The Tavern of Quests</h1>
+    <p class="char-select-subtitle">Select your adventurer to begin</p>
+    <div class="char-grid" id="char-grid"></div>
+    <button class="btn-create-char" id="btn-create-char">+ Create New Adventurer</button>
+  </div>
+  
+  <div id="app" style="display:none;">
+    <header class="header">
+      <img class="header-bg" src="https://images.unsplash.com/photo-1519074069444-1ba4fff66d16?w=1200&h=400&fit=crop" alt="Tavern" onerror="this.style.display='none'">
+      <div class="header-overlay">
+        <h1 class="header-title">&#9876;&#65039; The Tavern of Quests &#9876;&#65039;</h1>
+        <p class="header-subtitle">~ Where Every Task is an Adventure ~</p>
+      </div>
+    </header>
+    
+    <div class="stats-bar">
+      <div class="current-user-display" id="current-user-display" title="Switch Character">
+        <span class="current-user-avatar" id="current-user-avatar">&#129489;&#8205;&#127806;</span>
+        <span id="current-user-name">Adventurer</span>
+      </div>
+      <div class="stat-item"><span class="stat-icon">&#127984;</span><span>Lvl:</span><span class="stat-value" id="player-level">1</span></div>
+      <div class="stat-item"><span class="stat-icon">&#10024;</span><span>XP:</span><span class="stat-value" id="player-xp">0</span>
+        <div class="xp-bar-container"><div class="xp-bar-fill" id="xp-bar" style="width: 0%"></div></div>
+      </div>
+      <div class="stat-item"><span class="stat-icon">&#128220;</span><span>Done:</span><span class="stat-value" id="quests-completed">0</span></div>
+      <div class="stat-item"><span class="stat-icon">&#9876;&#65039;</span><span>Active:</span><span class="stat-value" id="quests-active">0</span></div>
+      <div class="stat-item"><span class="stat-icon">&#128293;</span><span>Streak:</span><span class="stat-value" id="player-streak">0</span></div>
+      <button class="roster-btn" id="btn-roster">&#128737;&#65039; Roster</button>
+      <button class="admin-trigger" id="btn-admin">&#9881;&#65039; Tavern Keeper</button>
+    </div>
+    
+    <main class="main-content">
+      <section class="add-quest-section">
+        <h2 class="section-title"><span class="icon">&#128203;</span> Post a New Quest</h2>
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label>Quest Name</label>
+            <input type="text" id="quest-name" placeholder="e.g., Slay the Dust Dragon..." maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Quest Type</label>
+            <select id="quest-type">
+              <option value="main">&#9876;&#65039; Main Quest</option>
+              <option value="side">&#128506; Side Quest</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="quest-category"></select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="quest-priority">
+              <option value="critical">&#128128; Critical</option>
+              <option value="high">&#128308; High</option>
+              <option value="medium" selected>&#128992; Medium</option>
+              <option value="low">&#128994; Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Difficulty (XP)</label>
+            <select id="quest-xp">
+              <option value="10">Easy (10 XP)</option>
+              <option value="25" selected>Medium (25 XP)</option>
+              <option value="50">Hard (50 XP)</option>
+              <option value="100">Epic (100 XP)</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2;">
+            <label>Description (optional)</label>
+            <input type="text" id="quest-desc" placeholder="Brief details..." maxlength="200">
+          </div>
+          <div class="quest-form-actions">
+            <button class="btn-add" id="btn-post-quest">&#9876;&#65039; Post Quest</button>
+            <button class="btn-template" id="btn-use-template" onclick="window.openTemplatePicker()">📋 Use Template</button>
+          </div>
+        </div>
+      </section>
+      
+      <section class="quest-board">
+        <div class="quest-column">
+          <div class="quest-column-header main-quests">
+            <div class="quest-column-title main">&#9876;&#65039; Main Quests</div>
+            <div class="quest-count" id="main-count">0</div>
+          </div>
+          <div class="filter-tabs" id="main-filter-tabs"></div>
+          <div class="quest-list" id="main-quest-list">
+            <div class="empty-state"><span class="empty-icon">&#9876;&#65039;</span>No main quests yet.</div>
+          </div>
+        </div>
+        <div class="quest-column">
+          <div class="quest-column-header side-quests">
+            <div class="quest-column-title side">&#128506; Side Quests</div>
+            <div class="quest-count" id="side-count">0</div>
+          </div>
+          <div class="filter-tabs" id="side-filter-tabs"></div>
+          <div class="quest-list" id="side-quest-list">
+            <div class="empty-state"><span class="empty-icon">&#129517;</span>No side quests yet.</div>
+          </div>
+        </div>
+      </section>
+      
+      <section class="completed-section">
+        <h2 class="section-title"><span class="icon">&#127942;</span> Completed Quests</h2>
+        <div class="completed-list" id="completed-list">
+          <div class="empty-state" style="grid-column:1/-1;"><span class="empty-icon">&#127942;</span>No quests completed yet.</div>
+        </div>
+        <div class="pagination-controls" id="pagination-controls" style="display:none;">
+          <button class="pagination-btn" id="btn-prev-page">&#9664; Previous</button>
+          <span class="pagination-info" id="pagination-info">Page 1 of 1</span>
+          <button class="pagination-btn" id="btn-next-page">Next &#9654;</button>
+        </div>
+        <div class="completed-actions">
+          <button class="btn-archive" id="btn-archive" onclick="window.toggleArchiveSection()" style="display:none;">&#128230; Show Archive</button>
+          <button class="btn-clear-completed" id="btn-clear" onclick="window.handleClearCompleted()" style="display:none;">&#128465;&#65039; Clear Completed</button>
+        </div>
+      </section>
+      
+      <section class="archive-section" id="archive-section" style="display:none;">
+        <h2 class="section-title"><span class="icon">&#128230;</span> Archived Quests <span class="quest-count" id="archive-count">0</span></h2>
+        <div class="archive-list" id="archive-list">
+          <div class="empty-state"><span class="empty-icon">&#128230;</span>No archived quests.</div>
+        </div>
+        <button class="btn-clear-archive" id="btn-clear-archive" onclick="window.clearArchived()" style="display:none;">&#128465;&#65039; Clear Archive</button>
+      </section>
+    </main>
+    
+    <footer class="footer">&#9876;&#65039; The Tavern of Quests &#9876;&#65039; — Shared across the realm.</footer>
+  </div>
+  
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  tavern-of-quests:
+    build: .
+    container_name: tavern-of-quests
+    ports:
+      - "3000:3000"
+    volumes:
+      - tavern-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+
+volumes:
+  tavern-data:
+    driver: local
