@@ -8,7 +8,7 @@
 
 ## ⚔️ Core Features
 
-## 🧙🧝 Multi-User System
+### 🧙🧝 Multi-User System
 
 - **Character Creation**: Create multiple adventurers with custom names and avatar emojis
 - **Character Selection**: Switch between characters with a dedicated selection screen
