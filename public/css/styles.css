@@ -67,6 +67,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .admin-trigger:hover, .roster-btn:hover { background: rgba(212,168,67,0.2); border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px rgba(212,168,67,0.3); }
 .current-user-display { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; color: var(--gold); font-weight: 700; font-size: 1.1rem; padding: 4px 12px; background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; cursor: pointer; }
 .current-user-avatar { font-size: 1.4rem; }
+.current-user-display { cursor: pointer; }
 .realm-menu { position: relative; }
 .realm-menu summary { background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; color: var(--gold-dark); cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; list-style: none; padding: 6px 14px; transition: all .3s ease; }
 .realm-menu summary::-webkit-details-marker { display: none; }
@@ -445,6 +446,35 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .post-quest-actions { align-items: center; flex-wrap: wrap; }
 .post-quest-actions .btn-template { font-size: .75rem; letter-spacing: 1px; padding: 9px 12px; }
 .post-quest-actions .btn-cancel { margin-left: auto; }
+
+/* Adventurer achievements */
+.adventurer-hero { align-items: center; background: linear-gradient(135deg, rgba(212,168,67,.18), rgba(44,24,16,.25)); border: 1px solid rgba(212,168,67,.35); border-radius: 10px; display: flex; gap: 15px; margin-bottom: 16px; padding: 15px; }
+.adventurer-profile-avatar { background: rgba(26,15,10,.55); border: 1px solid var(--gold-dark); border-radius: 50%; display: grid; font-size: 2.4rem; height: 62px; place-items: center; width: 62px; }
+.adventurer-hero h4 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.2rem; margin-bottom: 4px; }
+.adventurer-hero p { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .76rem; }
+.adventurer-stat-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-bottom: 18px; }
+.adventurer-stat-grid > div { background: rgba(26,15,10,.45); border: 1px solid rgba(212,168,67,.22); border-radius: 8px; padding: 10px; text-align: center; }
+.adventurer-stat-grid strong, .adventurer-stat-grid span { display: block; }
+.adventurer-stat-grid strong { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.15rem; }
+.adventurer-stat-grid span { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .65rem; margin-top: 3px; text-transform: uppercase; }
+.adventurer-achievement-heading { border-bottom: 1px solid rgba(212,168,67,.3); color: var(--gold-light); display: flex; font-family: 'Cinzel', serif; font-size: .82rem; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
+.achievement-list { display: flex; flex-direction: column; gap: 8px; }
+.achievement-card { align-items: center; background: rgba(26,15,10,.38); border: 1px solid rgba(212,168,67,.16); border-radius: 8px; display: flex; gap: 12px; padding: 10px; }
+.achievement-card.unlocked { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.1); }
+.achievement-card.locked { opacity: .62; }
+.achievement-icon { font-size: 1.35rem; width: 28px; }
+.achievement-card strong, .achievement-card span:not(.achievement-icon) { display: block; }
+.achievement-card strong { color: var(--parchment); font-family: 'Cinzel', serif; font-size: .82rem; }
+.achievement-card span:not(.achievement-icon) { color: var(--parchment-dark); font-size: .8rem; margin-top: 2px; }
+
+/* Realm activity log */
+.activity-log-list { display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; padding-right: 4px; }
+.activity-log-entry { align-items: center; background: rgba(26,15,10,.42); border: 1px solid rgba(212,168,67,.18); border-radius: 8px; display: flex; gap: 12px; padding: 11px; }
+.activity-log-icon { font-size: 1.3rem; width: 28px; }
+.activity-log-entry strong, .activity-log-entry span:not(.activity-log-icon) { display: block; }
+.activity-log-entry strong { color: var(--parchment); font-size: .95rem; font-weight: 400; }
+.activity-log-entry span:not(.activity-log-icon) { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .65rem; margin-top: 4px; }
+.activity-log-empty { color: var(--parchment-dark); font-style: italic; padding: 20px 0; text-align: center; }
 
 /* Template Manager Styles */
 .template-list {

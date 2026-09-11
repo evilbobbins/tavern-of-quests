@@ -12,6 +12,8 @@ import { openTemplateManager, openTemplatePicker } from './components/TemplateMa
 import { openRealmDashboard } from './components/RealmDashboard.js';
 import { openBackupManager } from './components/BackupManager.js';
 import { openRealmMap } from './components/RealmMap.js';
+import { openAdventurerProfile } from './components/AdventurerProfile.js';
+import { openActivityLog } from './components/ActivityLog.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -60,6 +62,11 @@ window.openTemplatePicker = openTemplatePicker;
 window.openRealmDashboard = openRealmDashboard;
 window.openBackupManager = openBackupManager;
 window.openRealmMap = () => openRealmMap(window.state);
+window.openAdventurerProfile = () => openAdventurerProfile(window.state, {
+  name: document.getElementById('current-user-name')?.textContent,
+  avatar: document.getElementById('current-user-avatar')?.textContent
+});
+window.openActivityLog = () => openActivityLog(window.state.activity || []);
 window.closeTopModal = closeTopModal;
 
 function openPostQuestModal(startWithTemplate = false) {
@@ -134,7 +141,7 @@ async function init() {
     window.state.customCategories,
     window.state
   ));
-  document.getElementById('current-user-display')?.addEventListener('click', showCharacterSelect);
+  document.getElementById('current-user-display')?.addEventListener('click', () => window.openAdventurerProfile());
   document.getElementById('btn-clear')?.addEventListener('click', handleClearCompleted);
   
   document.getElementById('btn-prev-page')?.addEventListener('click', () => {
@@ -975,24 +982,24 @@ window.openCategoryManager = () => {
         <span class="cat-emoji">${cat.emoji}</span>
         <span class="cat-name">${escapeHtml(cat.name)}${cat.builtin ? ' <span style="font-size:0.7rem;opacity:0.6;">(built-in)</span>' : ''}</span>
         <span class="cat-quest-count">${total} quest${total !== 1 ? 's' : ''}</span>
-        ${!cat.builtin ? `<button class="cat-delete" onclick="window.requestDeleteCategory('${cat.id}')" title="Delete category">&times;</button>` : ''}
+        ${!cat.builtin ? `<button class="cat-delete" onclick="window.requestDeleteCategory('${cat.id}')" title="Delete location">&times;</button>` : ''}
       </div>
     `;
   }).join('');
   
   const content = `
     <div class="modal-header">
-      <h3 class="modal-title">🏷️ Category Management</h3>
+      <h3 class="modal-title">📍 Location Management</h3>
       <button class="modal-close" onclick="window.closeTopModal()">&times;</button>
     </div>
     <div class="admin-section">
-      <div class="admin-section-title">📋 Existing Categories</div>
+      <div class="admin-section-title">📋 Existing Locations</div>
       <div class="category-list">${categoryListHtml}</div>
     </div>
     <div class="admin-section" style="border-top:1px solid var(--gold-dark); padding-top:20px;">
-      <div class="admin-section-title">+ Create New Category</div>
+      <div class="admin-section-title">+ Create New Location</div>
       <div class="form-group" style="margin-bottom:12px;">
-        <label>Category Name</label>
+        <label>Location Name</label>
         <input type="text" id="new-cat-name" placeholder="e.g., Garden, Pets..." maxlength="30">
       </div>
       <div class="emoji-picker-container">
@@ -1037,10 +1044,10 @@ window.selectCategoryEmoji = (emoji) => {
 
 window.createCategory = async () => {
   const name = document.getElementById('new-cat-name').value.trim();
-  if (!name) { showToast('⚠️', 'Name Required', 'Please enter a category name.'); return; }
+  if (!name) { showToast('⚠️', 'Name Required', 'Please enter a location name.'); return; }
   if (!window.selectedCategoryEmoji) { showToast('⚠️', 'Icon Required', 'Please select an emoji icon.'); return; }
   const exists = window.state.customCategories.some(c => c.name.toLowerCase() === name.toLowerCase());
-  if (exists) { showToast('⚠️', 'Duplicate Name', `A category named "${name}" already exists.`); return; }
+  if (exists) { showToast('⚠️', 'Duplicate Name', `A location named "${name}" already exists.`); return; }
   const newCat = {
     id: 'cat_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
     name, emoji: window.selectedCategoryEmoji, builtin: false
@@ -1049,7 +1056,7 @@ window.createCategory = async () => {
   const saved = await saveStateWrapper();
   if (saved) {
     window.selectedCategoryEmoji = null;
-    showToast('🏷️', 'Category Created!', `"${name}" added.`);
+    showToast('📍', 'Location Created!', `"${name}" added.`);
     window.openCategoryManager();
     window.renderAll(); // Immediate UI update
   } else {
@@ -1063,7 +1070,7 @@ window.requestDeleteCategory = async (catId) => {
   const completedQuests = window.state.completed.filter(q => q.category === catId);
   const total = activeQuests.length + completedQuests.length;
   if (total === 0) {
-    if (confirm(`Delete category "${cat.emoji} ${cat.name}"?`)) await deleteCategory(catId);
+    if (confirm(`Delete location "${cat.emoji} ${cat.name}"?`)) await deleteCategory(catId);
   } else {
     const otherCategories = getAllCategories(window.state.customCategories).filter(c => c.id !== catId);
     const categoryOptions = otherCategories.map(c => 
@@ -1075,17 +1082,17 @@ window.requestDeleteCategory = async (catId) => {
     ].join('');
     const content = `
       <div class="modal-header">
-        <h3 class="modal-title">⚠️ Category In Use</h3>
+        <h3 class="modal-title">⚠️ Location In Use</h3>
         <button class="modal-close" onclick="window.closeTopModal()">&times;</button>
       </div>
       <div class="reassign-warning">
         <strong>${cat.emoji} ${escapeHtml(cat.name)}</strong> is used by <strong>${activeQuests.length} active</strong> and <strong>${completedQuests.length} completed</strong> quest(s).<br>
-        Choose a new category for these quests before deleting.
+        Choose a new location for these quests before deleting.
       </div>
       <div style="font-family:'Cinzel',serif; font-size:0.9rem; color:var(--gold-light); margin-bottom:8px;">Affected Quests:</div>
       <div class="reassign-quest-list">${questListHtml}</div>
       <div class="form-group">
-        <label>Reassign to Category</label>
+        <label>Reassign to Location</label>
         <select id="reassign-target">${categoryOptions}</select>
       </div>
       <div class="modal-actions">
@@ -1099,7 +1106,7 @@ window.requestDeleteCategory = async (catId) => {
 
 window.confirmDeleteWithReassign = async (catId) => {
   const newCatId = document.getElementById('reassign-target').value;
-  if (!newCatId) { showToast('⚠️', 'No Target', 'Please select a category.'); return; }
+  if (!newCatId) { showToast('⚠️', 'No Target', 'Please select a location.'); return; }
   window.state.quests.forEach(q => { if (q.category === catId) q.category = newCatId; });
   window.state.completed.forEach(q => { if (q.category === catId) q.category = newCatId; });
   if (window.state.filters.main === catId) window.state.filters.main = 'all';
@@ -1115,7 +1122,7 @@ async function deleteCategory(catId) {
   if (window.state.filters.side === catId) window.state.filters.side = 'all';
   const saved = await saveStateWrapper();
   if (saved) {
-    showToast('🗑️', 'Category Deleted', 'Category removed.');
+    showToast('🗑️', 'Location Deleted', 'Location removed.');
     window.openCategoryManager();
     window.renderAll(); // Immediate UI update
   } else {

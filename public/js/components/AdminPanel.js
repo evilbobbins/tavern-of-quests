@@ -1,24 +1,8 @@
 import { createModal } from './Modal.js';
-import { escapeHtml } from '../utils/helpers.js';
 
 export function openAdminPanel(connectionStatus, lastSaveError, customCategories, state) {
   const customCatCount = (customCategories || []).length;
   const templateCount = (state.templates || []).length;
-  const activity = (state.activity || []).slice(0, 6);
-  const activityHtml = activity.length
-    ? activity.map(item => `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,.15);">${escapeHtml(item.icon || '📜')} ${escapeHtml(item.message || '')}<span style="float:right;opacity:.55;font-size:.72rem;">${item.at ? new Date(item.at).toLocaleDateString() : ''}</span></div>`).join('')
-    : '<div style="opacity:.7;font-style:italic;">Your recent quest activity will appear here.</div>';
-  const completedCount = (state.completed || []).length + (state.archived || []).length;
-  const achievements = [
-    completedCount >= 1 && '📜 First Quest — completed your first quest',
-    completedCount >= 10 && '🏅 Veteran Adventurer — completed 10 quests',
-    state.streak >= 7 && '🔥 Flame Keeper — a 7-day streak',
-    state.level >= 5 && '👑 Seasoned Hero — reached Level 5',
-    (state.templates || []).length >= 3 && '🧠 Ritual Master — created 3 templates'
-  ].filter(Boolean);
-  const achievementHtml = achievements.length
-    ? achievements.map(item => `<div style="padding:7px 0;border-bottom:1px solid rgba(212,168,67,.15);">${item}</div>`).join('')
-    : '<div style="opacity:.7;font-style:italic;">Complete quests, build a streak, and create templates to earn badges.</div>';
   
   const content = `
     <div class="modal-header">
@@ -27,22 +11,23 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
 
     <div class="admin-section">
-      <div class="admin-section-title">🕯️ Recent Activity</div>
-      <div style="font-size:.82rem;color:var(--parchment-dark);">${activityHtml}</div>
-    </div>
-
-    <div class="admin-section">
-      <div class="admin-section-title">🏆 Achievements</div>
-      <div style="font-size:.82rem;color:var(--parchment-dark);">${achievementHtml}</div>
-    </div>
-    
-    <div class="admin-section">
       <div class="admin-section-title">👥 Manage Adventurers</div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.showCharacterSelect(); window.closeModal();">
           <span class="admin-icon">🛡️</span>
           <span>View Roster</span>
           <span class="admin-label">Switch or create characters</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">🕯️ Realm Chronicle</div>
+      <div class="admin-grid">
+        <button class="admin-btn" onclick="window.openActivityLog()" style="grid-column:1/-1;">
+          <span class="admin-icon">🕯️</span>
+          <span>View Recent Activity</span>
+          <span class="admin-label">Review the last 20 happenings in the realm</span>
         </button>
       </div>
     </div>
@@ -59,12 +44,12 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
     
     <div class="admin-section">
-      <div class="admin-section-title">🏷️ Categories <span style="font-size:0.8rem; opacity:0.7;">(${customCatCount} custom)</span></div>
+      <div class="admin-section-title">📍 Locations <span style="font-size:0.8rem; opacity:0.7;">(${customCatCount} custom)</span></div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.openCategoryManager()" style="grid-column:1/-1;">
-          <span class="admin-icon">🏷️</span>
-          <span>Manage Categories</span>
-          <span class="admin-label">Create or remove categories</span>
+          <span class="admin-icon">📍</span>
+          <span>Manage Locations</span>
+          <span class="admin-label">Create or remove realm locations</span>
         </button>
       </div>
     </div>
