@@ -14,7 +14,7 @@ function dueStatus(quest) {
 }
 
 export async function openRealmDashboard() {
-  const content = `<div class="modal-header"><h3 class="modal-title">🌍 Realm Dashboard</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div><div class="empty-state">Gathering the realm’s quests…</div>`;
+  const content = `<div class="modal-header"><h3 class="modal-title">🌍 The Realm Chronicle</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div><div class="empty-state">Gathering the realm’s quests…</div>`;
   const modal = createModal(content);
   try {
     const users = await loadUsers();
@@ -27,12 +27,12 @@ export async function openRealmDashboard() {
       ? reminders.sort((a, b) => a.quest.dueDate.localeCompare(b.quest.dueDate)).map(({ user, quest, status }) => `<div class="realm-reminder ${status.urgent ? 'urgent' : ''}"><span>${escapeHtml(user.avatar)}</span><div><strong>${escapeHtml(quest.name)}</strong><div>${escapeHtml(user.name)} · ${status.label}</div></div></div>`).join('')
       : '<div class="empty-state">🕯️ No quests are due today or tomorrow.</div>';
     modal.querySelector('.modal-inner').innerHTML = `
-      <div class="modal-header"><h3 class="modal-title">🌍 Realm Dashboard</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div>
+      <div class="modal-header"><h3 class="modal-title">🌍 The Realm Chronicle</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div>
       <div class="realm-stats"><div><strong>${users.length}</strong><span>Adventurers</span></div><div><strong>${active}</strong><span>Active quests</span></div><div><strong>${completed}</strong><span>Completed quests</span></div></div>
       <div class="admin-section"><div class="admin-section-title">⏰ Due Soon</div><div class="realm-reminders">${reminderHtml}</div></div>
       <div class="admin-section"><div class="admin-section-title">🛡️ Adventurer Roster</div><div class="realm-roster">${roster}</div></div>
       <div class="modal-actions"><button class="btn-modal btn-cancel" onclick="window.closeTopModal()">Close</button></div>`;
   } catch (err) {
-    modal.querySelector('.modal-inner').innerHTML = `<div class="modal-header"><h3 class="modal-title">🌍 Realm Dashboard</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div><div class="empty-state">The realm could not be loaded. Please try again.</div>`;
+    modal.querySelector('.modal-inner').innerHTML = `<div class="modal-header"><h3 class="modal-title">🌍 The Realm Chronicle</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div><div class="empty-state">The realm could not be loaded. Please try again.</div>`;
   }
 }

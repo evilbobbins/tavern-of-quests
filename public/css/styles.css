@@ -68,13 +68,6 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .current-user-display { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; color: var(--gold); font-weight: 700; font-size: 1.1rem; padding: 4px 12px; background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; cursor: pointer; }
 .current-user-avatar { font-size: 1.4rem; }
 .current-user-display { cursor: pointer; }
-.realm-menu { position: relative; }
-.realm-menu summary { background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; color: var(--gold-dark); cursor: pointer; font-family: 'Cinzel', serif; font-size: .85rem; list-style: none; padding: 6px 14px; transition: all .3s ease; }
-.realm-menu summary::-webkit-details-marker { display: none; }
-.realm-menu summary:hover, .realm-menu[open] summary { border-color: var(--gold); color: var(--gold); background: rgba(212,168,67,.2); }
-.realm-menu-options { background: var(--dark-wood); border: 1px solid var(--gold-dark); border-radius: 8px; box-shadow: 0 8px 18px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 4px; min-width: 135px; padding: 6px; position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; }
-.realm-menu-options button { background: transparent; border: 0; border-radius: 5px; color: var(--parchment); cursor: pointer; font-family: 'Cinzel', serif; padding: 8px 10px; text-align: left; }
-.realm-menu-options button:hover { background: rgba(212,168,67,.18); color: var(--gold); }
 
 .main-content { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px; }
 .add-quest-section { background: linear-gradient(135deg, rgba(44,24,16,0.9), rgba(26,15,10,0.95)); border: 2px solid var(--gold-dark); border-radius: 12px; padding: 24px; margin-bottom: 30px; position: relative; overflow: hidden; }
