@@ -37,12 +37,8 @@ export function openTemplateManager() {
       <button class="modal-close" onclick="window.closeTopModal()">&times;</button>
     </div>
     
-    <div class="admin-section">
-      <div class="admin-section-title">📋 Existing Templates</div>
-      <div class="template-list">${templateListHtml}</div>
-    </div>
-    
-    <div class="admin-section" style="border-top:1px solid var(--gold-dark); padding-top:20px;">
+    <div class="template-manager-layout">
+    <div class="admin-section template-create-section">
       <div class="admin-section-title">➕ Create New Template</div>
       <div class="form-group" style="margin-bottom:12px;">
         <label>Template Name</label>
@@ -90,9 +86,15 @@ export function openTemplateManager() {
         <button class="btn-modal btn-save" onclick="window.createTemplate()">➕ Create Template</button>
       </div>
     </div>
+    <div class="admin-section template-existing-section">
+      <div class="admin-section-title">📋 Existing Templates</div>
+      <div class="template-list">${templateListHtml}</div>
+    </div>
+    </div>
   `;
   
-  createModal(content);
+  const overlay = createModal(content);
+  overlay.querySelector('.modal')?.classList.add('template-manager-modal');
 }
 
 function getPriorityBadge(priority) {
@@ -308,7 +310,8 @@ export function openTemplatePicker() {
     </div>
   `;
   
-  createModal(content);
+  const overlay = createModal(content);
+  overlay.querySelector('.modal')?.classList.add('template-picker-modal');
 }
 
 window.applyTemplate = (templateId) => {

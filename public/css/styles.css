@@ -223,6 +223,8 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .modal { background: linear-gradient(135deg, #3a2415, #2c1810); border: 3px solid var(--gold); border-radius: 16px; padding: 0; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 40px rgba(212,168,67,0.4); animation: modal-appear 0.4s ease-out; }
 .modal.admin-modal { max-width: 920px; }
 .modal.adventurer-profile-modal { max-width: 860px; }
+.modal.template-picker-modal { max-width: 860px; }
+.modal.template-manager-modal { max-width: 920px; }
 .modal-inner { position: relative; padding: 28px; }
 .modal-inner::before { content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px; border: 1px solid rgba(212,168,67,0.3); border-radius: 10px; pointer-events: none; }
 .modal.wide { max-width: 700px; }
@@ -518,6 +520,10 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   max-height: 300px;
   overflow-y: auto;
 }
+.template-manager-layout { display:grid; gap:24px; grid-template-columns:minmax(0, 1.15fr) minmax(280px, .85fr); }
+.template-manager-layout .admin-section { margin-bottom:0; min-width:0; }
+.template-create-section { border-right:1px solid rgba(212,168,67,.3); padding-right:24px; }
+.template-existing-section .template-list { max-height:500px; }
 
 .template-item {
   background: rgba(26, 15, 10, 0.6);
@@ -579,8 +585,8 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 
 /* Template Picker Styles */
 .template-picker-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   max-height: 400px;
   overflow-y: auto;
@@ -650,6 +656,9 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   .admin-grimoire-grid { grid-template-columns: 1fr; }
   .achievement-grid { grid-template-columns:1fr; }
   .rank-achievement-list { grid-template-columns:1fr; }
+  .template-picker-list { grid-template-columns:1fr; }
+  .template-manager-layout { grid-template-columns:1fr; }
+  .template-create-section { border-bottom:1px solid rgba(212,168,67,.3); border-right:0; padding:0 0 20px; }
   .emoji-grid { grid-template-columns: repeat(8, 1fr); }
   .char-grid { grid-template-columns: 1fr 1fr; }
   .pagination-controls { gap: 10px; }
