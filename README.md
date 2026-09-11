@@ -2,193 +2,171 @@
 
 ## 🏰 Overview
 
-**The Tavern of Quests** is a gamified, shared task management application designed with a rich, dark-fantasy D&D aesthetic. It transforms mundane daily chores and projects into "Quests," rewarding users with XP, level-ups, and streaks. Built as a client-server application, it is designed to be deployed via Docker, allowing multiple users across a network to collaborate on and view the same quest board in real-time.
+**The Tavern of Quests** is a shared, dark-fantasy task board that turns everyday work into adventures. Gather a party of adventurers, post Main and Side Quests, earn XP, explore the Realm Map, and take a break at the Tavern Games table.
+
+Built with a lightweight Node.js server and a persistent Docker volume, it is ideal for a household, family, flat, or small party sharing one questing realm on a local network.
 
 ---
 
-## ⚔️ Core Features
+## ⚔️ Features of the Realm
 
-### 🧙🧝 Multi-User System
+### 🧙🧝 Adventurers and progress
 
-- **Character Creation**: Create multiple adventurers with custom names and avatar emojis
-- **Character Selection**: Switch between characters with a dedicated selection screen
-- **Character Management**: Edit character names and avatars, or delete characters entirely
-- **Data Isolation**: Each character maintains separate quest history, XP, and statistics
+- Create, rename, edit, and retire adventurers with custom emoji avatars.
+- Keep each adventurer’s quests, completed history, XP, level, and streak private to them.
+- Open an adventurer’s chronicle directly from the top bar to review achievements and progress.
+- Browse the roster when it is time to change adventurers.
 
-### 📋 Quest Management
+### 📋 Quest board
 
-- **Quest Types**: Tasks can be categorized as **Main Quests** (major goals) or **Side Quests** (minor tasks).
-- **Priority System**: Quests are color-coded by urgency: 💀 Critical, 🔴 High, 🟡 Medium, and 🟢 Low.
-- **XP Rewards**: Each quest is assigned an XP value (10, 25, 50, or 100) based on its difficulty.
-- **Filtering & Sorting**: Quest boards can be filtered by category and automatically sort by priority and creation date.
-- **Quest Templates**: Create templates for Quests such as "Morning Meditation" or "Weekly Review" that need the same settings each time
-- **Quest Editing**: Modify quest details after creation
-- **Quest Deletion**: Remove quests with confirmation
+- Post **Main Quests** for grand objectives and **Side Quests** for smaller errands.
+- Set priority, difficulty-based XP, descriptions, and due dates.
+- Edit, complete, restore, archive, or permanently remove quests.
+- Use compact location filters for both quest columns.
+- Create reusable quest templates to post recurring adventures quickly.
+- Keep completed quests paginated and archive older victories when the board gets busy.
 
-### 👑 Completion & Archive System
-- **Quest Completion**: Mark quests as complete to earn XP and advance level
-- **Archive Feature**: Move completed quests to archive for long-term storage
-- **Quest Restoration**: Restore archived quests back to completed status
-- **Permanent Deletion**: Permanently delete archived quests
-- **Batch Operations**: Clear all completed quests or clear entire archive
+### 🗺️ One shared realm
 
-### 🎮 Gamification & Progression
+- Explore the **Realm Map** to see active quests grouped by location.
+- Start with **The Castle**, **The Wizard’s Lair**, and **Mooncrest Academy**, then add more locations through the Tavern Keeper.
+- Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options.
+- The **Realm Chronicle** offers a high-level view of the party’s activity and progress.
 
-- **Leveling System**: Users earn XP to level up, complete with a visual XP progress bar and a dramatic "Level Up!" overlay animation.
-- **Daily Streaks**: Tracks consecutive days of completing at least one quest, encouraging daily productivity.
-- **Visual Feedback**: Toast notifications, particle effects, and smooth animations provide satisfying feedback for every action.
+### 🗄️ Backup Vault
 
-### 🏷️ Custom Categories & Emoji Library
+- Automatic server snapshots protect the whole realm on a configurable schedule.
+- Create a manual backup before a big change.
+- Browse backups in the Tavern Keeper and restore a selected snapshot.
+- Restoring creates a safety backup of the current realm first, so the previous state is not lost.
 
-- **Built-in Categories**: Starts with **The Castle**, **The Wizard's Lair**, and **Mooncrest Academy**.
-- **Custom Categories**: Users can create unlimited custom categories (e.g., "Garden", "Pets", "Work").
-- **Emoji Picker**: A built-in, scrollable library of 300+ Unicode emojis, organized by theme (Fantasy, Home, Tech, Nature, Animals, etc.), allowing users to assign unique icons to their custom categories.
-- **Safe Deletion**: If a category is deleted while in use, the system prompts the user to reassign affected quests to a new category before proceeding.
+### 🎲 Tavern Games: Runefall Revel
 
----
+- A playable tavern-themed block-stacking mini-game built into the status bar.
+- Stack enchanted runes, clear rows, gain score, and survive ever-faster revel levels.
+- Includes next-rune preview, pause/restart, keyboard controls, and touch-friendly buttons for smaller screens.
+- Open it with **🎲 Tavern Games** without leaving the quest board.
 
-## 🏗️ Technical Architecture
+### 👑 Tavern Keeper tools
 
-### 🖥️ Frontend
-
-- **Pure Vanilla Stack**: Built with HTML5, CSS3, and modern JavaScript (ES6+). No frontend frameworks, ensuring fast load times and easy maintenance.
-- **Thematic UI**: Custom CSS featuring a dark wood and parchment color palette, glowing gold accents, and fantasy fonts (Cinzel, IM Fell English).
-- **Optimistic UI & Error Handling**: The UI updates instantly when actions are taken, with automatic rollbacks and error toasts if the server fails to save.
-
-### 🗄️ Backend
-
-- **Node.js & Express**: A lightweight REST API handling state retrieval (`GET /api/state`) and updates (`PUT /api/state`).
-- **Atomic File Storage**: Data is stored in a `data.json` file. The server uses a dedicated `/app/data` directory to ensure safe, persistent writes.
-- **Health Checks**: Includes a `/api/health` endpoint to verify server status and directory write permissions.
-- **Automatic Backups**: Keeps scheduled snapshots in `/app/data/backups` before writes, with configurable interval and retention.
-
-### 🐳 Docker & Deployment
-
-- **Containerized**: Fully containerized using a multi-stage `Dockerfile` based on `node:18-alpine` for a minimal footprint.
-- **Persistent Storage**: Uses a Docker named volume (`tavern_data`) mapped to `/app/data`, ensuring all quests, XP, and custom categories survive container rebuilds and restarts.
-- **Multi-User Sync**: The frontend polls the server every 30 seconds to automatically pull in changes made by other users on the network.
+- Manage shared locations and shared quest templates.
+- Open the activity chronicle, backup vault, and character tools.
+- Refresh the current realm from the server and inspect connection status.
+- Reset a character’s streak or progress when appropriate, with guarded destructive actions.
 
 ---
 
-## 📖 The Tavern Keeper's Grimoire (Admin Panel)
+## 🏗️ Technical architecture
 
-The admin panel provides deep control over the realm's data and settings:
-
-- **Server Status**: Real-time connection indicator (Online/Syncing/Offline) with detailed error logging.
-- **Connection Tools**: Buttons to manually refresh data from the server or test the server's health/write permissions.
-- **Category Management**: Full CRUD interface for custom categories.
-- **Stat Resets**: Options to manually reset the daily streak or wipe XP/Level back to 1.
-- **Backup & Restore**: Export the entire realm state to a JSON file, or import a previous JSON backup.
-- **Danger Zone**: A "Wipe Character Data" function that requires typing "RESET" to confirm, permanently deleting all progress for the active character.
+- **Frontend:** Vanilla HTML, CSS, and modern JavaScript modules—no framework required.
+- **Theme:** Dark wood, parchment, glowing gold accents, and fantasy typography (Cinzel, MedievalSharp, and IM Fell English).
+- **Backend:** Node.js with Express and a small REST API for adventurers, their state, the shared realm, health checks, and backups.
+- **Persistence:** Atomic JSON writes under `/app/data`, stored in a Docker named volume.
+- **Conflict protection:** Revision checks avoid silently overwriting another adventurer’s shared locations or templates.
+- **Health check:** `GET /api/health` confirms that the Tavern server and persistent storage are ready.
 
 ---
 
-## 🚀 Deployment Quick-Start
+## 🚀 Raise the Tavern with Docker
 
-# Configuration
-**Environment Variables**
-PORT: Server port (default: 3000)
-NODE_ENV: Environment mode (default: production)
-BACKUP_INTERVAL_HOURS: Hours between automatic backups (default: 24)
-BACKUP_RETENTION: Number of automatic backups to retain (default: 14)
+### Docker Compose (recommended)
 
-**Application Constants**
-Located in public/js/config.js:
-XP_PER_LEVEL: 100 XP required per level
-COMPLETED_PER_PAGE: 12 quests per page
-Priority order and labels
-Built-in categories
+```bash
+docker compose up -d --build
+```
 
-**Browser Compatibility**
-Modern browsers with ES6 module support
-Chrome/Edge 61+
-Firefox 60+
-Safari 11+
+Open [http://localhost:3000](http://localhost:3000), or replace `localhost` with the server’s IP address for other adventurers on your network.
 
-# Build and start the container in the background
+Useful commands:
 
-docker-compose up -d --build
+```bash
+# Follow the tavern logs
+docker compose logs -f tavern-of-quests
 
-# View live logs
+# Stop the container while retaining all realm data
+docker compose down
 
-docker-compose logs -f tavern
+# Rebuild after pulling new project changes
+docker compose up -d --build
+```
 
-# Access the tavern
+### Docker Hub image
 
-# Open http://localhost:3000 (or your server's IP) in any browser
+The published image is available at [`evilbobbins/tavern-of-quests`](https://hub.docker.com/r/evilbobbins/tavern-of-quests):
 
-## docker-compose
+```bash
+docker pull evilbobbins/tavern-of-quests:latest
+docker run -d --name tavern-of-quests -p 3000:3000 -v tavern-data:/app/data evilbobbins/tavern-of-quests:latest
+```
+
+The release image is published for `linux/amd64`.
+
+### Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `3000` | Tavern server port |
+| `NODE_ENV` | `production` | Node environment |
+| `BACKUP_INTERVAL_HOURS` | `24` | Time between automatic realm backups |
+| `BACKUP_RETENTION` | `14` | Number of automatic snapshots retained |
+
+### Included Compose file
+
 ```yaml
 services:
-  tavern:
+  tavern-of-quests:
     build: .
     container_name: tavern-of-quests
-    restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
-      - tavern_data:/app/data
+      - tavern-data:/app/data
     environment:
-      - PORT=3000
       - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
 
 volumes:
-  tavern_data:
+  tavern-data:
     driver: local
-restart: unless-stopped
 ```
 
-_Note: Data is safely stored in the `tavern_data` Docker volume. To completely wipe the data, one must explicitly use `docker-compose down -v`._
+> Realm data lives in the `tavern-data` Docker volume. `docker compose down` keeps it safe; `docker compose down -v` permanently removes it.
 
-**Layout**
-```yaml
+---
+
+## 🧭 Project layout
+
+```text
 tavern-of-quests/
-│
-├── 📄 server.js                          # Express server and API endpoints
-├── 📄 package.json                       # Node.js dependencies and scripts
-├── 📄 Dockerfile                         # Docker container configuration
-├── 📄 docker-compose.yml                 # Docker Compose orchestration
-├── 📄 .dockerignore                      # Docker build exclusions
-├── 📄 .gitignore                         # Git repository exclusions
-│
-├── 📁 data/                              # Persistent data storage (auto-created)
-│   └── 📄 users.json                     # User data and quest state
-│
-└── 📁 public/                            # Frontend application
-    │
-    ├── 📄 index.html                     # Main HTML structure
-    │
-    ├── 📁 css/
-    │   └── 📄 styles.css                 # Complete stylesheet
-    │
-    └── 📁 js/
-        │
-        ├── 📄 app.js                     # Main application controller
-        ├── 📄 config.js                  # Configuration constants
-        │
-        ├── 📁 utils/
-        │   ├── 📄 helpers.js             # Utility functions (escapeHtml, showToast, etc.)
-        │   ├── 📄 emojiLibrary.js        # Emoji picker data
-        │   └── 📄 categoryUtils.js       # Category management utilities
-        │
-        ├── 📁 services/
-        │   └── 📄 api.js                 # API service layer
-        │
-        └── 📁 components/
-            ├── 📄 Modal.js               # Modal dialog system
-            ├── 📄 CharacterSelect.js     # Character selection screen
-            ├── 📄 CreateCharacter.js     # Character creation modal
-            ├── 📄 EditCharacter.js       # Character editing modal
-            ├── 📄 EmojiPicker.js         # Emoji selection component
-            ├── 📄 QuestCard.js           # Individual quest card renderer
-            ├── 📄 QuestBoard.js          # Quest board with filtering
-            ├── 📄 CompletedQuests.js     # Completed quests display
-            ├── 📄 AdminPanel.js          # Admin settings panel
-            └── 📄 TemplateManager.js     # Quest template management
+├── server.js                         # Express API, shared realm, and backups
+├── Dockerfile                        # Container image definition
+├── docker-compose.yml                # Local deployment setup
+├── public/
+│   ├── index.html                    # Tavern interface
+│   ├── css/styles.css                # Fantasy theme and responsive styles
+│   ├── images/faded-realm-map.png    # Realm Map artwork
+│   └── js/
+│       ├── app.js                    # Application controller
+│       ├── config.js                 # Quest and location defaults
+│       ├── services/api.js           # REST API client
+│       └── components/
+│           ├── AdminPanel.js         # Tavern Keeper menu
+│           ├── BackupManager.js      # Backup Vault
+│           ├── RealmMap.js           # Interactive Realm Map
+│           ├── RealmDashboard.js     # Realm Chronicle
+│           ├── AdventurerProfile.js  # Adventurer achievements
+│           ├── ActivityLog.js        # Recent realm activity
+│           ├── TemplateManager.js    # Shared quest templates
+│           └── TavernBlocks.js       # Runefall Revel mini-game
+└── data/                             # Created inside the persistent Docker volume
 ```
 
-**Credits**
-Fonts: Google Fonts (MedievalSharp, Cinzel, IM Fell English)
-Icons: Unicode Emoji
-Background Image: Unsplash
-Framework: Node.js, Express.js
+---
+
+## ✨ Credits
+
+- Fonts: Google Fonts — MedievalSharp, Cinzel, Cinzel Decorative, and IM Fell English
+- Icons: Unicode emoji
+- Tavern header artwork: Unsplash
+- Runtime: Node.js and Express
