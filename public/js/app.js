@@ -14,6 +14,7 @@ import { openBackupManager } from './components/BackupManager.js';
 import { openRealmMap } from './components/RealmMap.js';
 import { openAdventurerProfile } from './components/AdventurerProfile.js';
 import { openActivityLog } from './components/ActivityLog.js';
+import { openTavernBlocks } from './components/TavernBlocks.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -68,6 +69,7 @@ window.openAdventurerProfile = () => openAdventurerProfile(window.state, {
   avatar: document.getElementById('current-user-avatar')?.textContent
 });
 window.openActivityLog = () => openActivityLog(window.state.activity || []);
+window.openTavernBlocks = openTavernBlocks;
 window.closeTopModal = closeTopModal;
 
 function openPostQuestModal(startWithTemplate = false) {
@@ -133,6 +135,7 @@ async function init() {
   
   document.getElementById('btn-create-char')?.addEventListener('click', openCreateCharModal);
   document.getElementById('btn-roster')?.addEventListener('click', showCharacterSelect);
+  document.getElementById('btn-tavern-games')?.addEventListener('click', openTavernBlocks);
   document.getElementById('btn-realm')?.addEventListener('click', () => window.openRealmDashboard());
   document.getElementById('btn-realm-map')?.addEventListener('click', () => window.openRealmMap());
   document.getElementById('btn-open-post-quest')?.addEventListener('click', () => window.openPostQuestModal());
