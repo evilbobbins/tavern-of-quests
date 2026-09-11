@@ -83,22 +83,23 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
     
     <div class="admin-section">
-      <div class="admin-section-title">📜 Backup & Restore</div>
+      <div class="admin-section-title">🗄️ Realm Backup Vault</div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.openBackupManager()" style="grid-column:1/-1;">
           <span class="admin-icon">🗄️</span>
           <span>Open Backup Vault</span>
-          <span class="admin-label">Browse, create, or restore realm snapshots</span>
+          <span class="admin-label">Back up or restore every adventurer in the realm</span>
         </button>
+        <div class="admin-adventurer-backup-note">👤 Current Adventurer Only — these JSON tools never import or export the full realm.</div>
         <button class="admin-btn" onclick="window.adminExportData()">
           <span class="admin-icon">📤</span>
-          <span>Export Data</span>
-          <span class="admin-label">Download JSON backup</span>
+          <span>Export This Adventurer</span>
+          <span class="admin-label">Download this adventurer’s JSON data only</span>
         </button>
         <button class="admin-btn" onclick="window.adminImportData()">
           <span class="admin-icon">📥</span>
-          <span>Import Data</span>
-          <span class="admin-label">Restore from JSON</span>
+          <span>Import to This Adventurer</span>
+          <span class="admin-label">Replace this adventurer’s data from JSON only</span>
         </button>
       </div>
     </div>

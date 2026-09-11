@@ -961,12 +961,12 @@ window.adminExportData = () => {
   const a = document.createElement('a');
   const date = new Date().toISOString().split('T')[0];
   a.href = url;
-  a.download = `tavern_backup_${document.getElementById('current-user-name').textContent}_${date}.json`;
+  a.download = `tavern_adventurer_${document.getElementById('current-user-name').textContent}_${date}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  showToast('📤', 'Data Exported', 'Backup saved!');
+  showToast('📤', 'Adventurer Exported', 'Only this adventurer’s data was saved.');
 };
 
 window.adminImportData = () => {
@@ -981,7 +981,7 @@ window.adminImportData = () => {
       try {
         const imported = JSON.parse(event.target.result);
         if (!imported.quests || !imported.completed) throw new Error('Invalid format');
-        if (!confirm('⚠️ Overwrite current character data?')) return;
+        if (!confirm('⚠️ Overwrite this adventurer’s data only? Other adventurers and the shared realm will not change.')) return;
         const backup = { ...window.state };
         window.state = { ...window.state, ...imported };
         if (!window.state.filters) window.state.filters = { main: 'all', side: 'all' };
@@ -989,7 +989,7 @@ window.adminImportData = () => {
         if (!Array.isArray(window.state.archived)) window.state.archived = [];
         if (!Array.isArray(window.state.templates)) window.state.templates = [];
         const saved = await saveStateWrapper();
-        if (saved) { window.renderAll(); closeTopModal(); showToast('📥', 'Data Imported', 'Restored!'); }
+        if (saved) { window.renderAll(); closeTopModal(); showToast('📥', 'Adventurer Imported', 'Only this adventurer’s data was restored.'); }
         else { window.state = backup; window.renderAll(); showToast('⚠️', 'Import Failed', 'Reverted.'); }
       } catch (err) {
         showToast('⚠️', 'Import Failed', 'Invalid file.');
