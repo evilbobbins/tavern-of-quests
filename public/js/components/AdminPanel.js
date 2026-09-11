@@ -10,6 +10,7 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
       <button class="modal-close" onclick="window.closeModal()">&times;</button>
     </div>
 
+    <div class="admin-grimoire-grid">
     <div class="admin-section">
       <div class="admin-section-title">👥 Manage Adventurers</div>
       <div class="admin-grid">
@@ -90,6 +91,7 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
         </button>
       </div>
     </div>
+    </div>
     
     <div class="admin-section admin-danger-zone">
       <div class="admin-section-title">☠️ Danger Zone</div>
@@ -102,5 +104,6 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
   `;
   
-  createModal(content);
+  const overlay = createModal(content);
+  overlay.querySelector('.modal')?.classList.add('admin-modal');
 }
