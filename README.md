@@ -29,8 +29,8 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 ### 🗺️ One shared realm
 
 - Explore the **Realm Map** to see active quests grouped by location.
-- Start with **The Castle**, **The Wizard’s Lair**, **Mooncrest Academy**, **Dragon's Den**, and the **Bog of Eternal Stench**, then add more locations through the Tavern Keeper.
-- Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options.
+- The realm begins with **The Castle**, **The Wizard’s Lair**, **Mooncrest Academy**, **Dragon's Den**, and the **Bog of Eternal Stench**.
+- Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options. Location creation is currently curated to keep the Realm Map consistent.
 - The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including the current **Runefall Champion**.
 
 ### 🗄️ Backup Vault
@@ -52,7 +52,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 
 ### 👑 Tavern Keeper tools
 
-- Manage shared locations and shared quest templates.
+- Manage shared quest templates.
 - Open the activity chronicle, backup vault, and character tools.
 - Reset the shared Runefall score ledger through a confirmation-gated scoreboard control.
 - Refresh the current realm from the server and inspect connection status.

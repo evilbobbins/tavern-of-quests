@@ -1,7 +1,6 @@
 import { createModal } from './Modal.js';
 
-export function openAdminPanel(connectionStatus, lastSaveError, customCategories, state) {
-  const customCatCount = (customCategories || []).length;
+export function openAdminPanel(state) {
   const templateCount = (state.templates || []).length;
   
   const content = `
@@ -45,17 +44,6 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
     
     <div class="admin-section">
-      <div class="admin-section-title">📍 Shared Locations <span style="font-size:0.8rem; opacity:0.7;">(${customCatCount} custom)</span></div>
-      <div class="admin-grid">
-        <button class="admin-btn" onclick="window.openCategoryManager()" style="grid-column:1/-1;">
-          <span class="admin-icon">📍</span>
-          <span>Manage Locations</span>
-          <span class="admin-label">Shared by every adventurer</span>
-        </button>
-      </div>
-    </div>
-    
-    <div class="admin-section">
       <div class="admin-section-title">✨ Reset Statistics</div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.adminResetStreak()">
@@ -90,7 +78,7 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
           <span>Open Backup Vault</span>
           <span class="admin-label">Back up or restore every adventurer in the realm</span>
         </button>
-        <div class="admin-adventurer-backup-note">👤 Current Adventurer Only — these JSON tools never import or export the full realm.</div>
+        <div class="admin-adventurer-backup-note">👤 Current Adventurer Only</div>
         <button class="admin-btn" onclick="window.adminExportData()">
           <span class="admin-icon">📤</span>
           <span>Export This Adventurer</span>

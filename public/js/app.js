@@ -149,12 +149,7 @@ async function init() {
   document.getElementById('btn-realm')?.addEventListener('click', () => window.openRealmDashboard());
   document.getElementById('btn-realm-map')?.addEventListener('click', () => window.openRealmMap());
   document.getElementById('btn-open-post-quest')?.addEventListener('click', () => window.openPostQuestModal());
-  document.getElementById('btn-admin')?.addEventListener('click', () => openAdminPanel(
-    window.connectionStatus,
-    window.lastSaveError,
-    window.state.customCategories,
-    window.state
-  ));
+  document.getElementById('btn-admin')?.addEventListener('click', () => openAdminPanel(window.state));
   document.getElementById('current-user-display')?.addEventListener('click', () => window.openAdventurerProfile());
   document.getElementById('btn-clear')?.addEventListener('click', handleClearCompleted);
   
