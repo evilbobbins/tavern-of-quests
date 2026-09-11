@@ -30,6 +30,14 @@ export async function saveState(userId, state) {
   });
 }
 
+export async function saveRealm(realm) {
+  return await apiFetch('/api/realm', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(realm)
+  });
+}
+
 export async function createUser(name, avatar) {
   return await apiFetch('/api/users', {
     method: 'POST',

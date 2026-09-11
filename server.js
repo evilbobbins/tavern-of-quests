@@ -10,6 +10,7 @@ const DATA_FILE = path.join(DATA_DIR, 'users.json');
 const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const BACKUP_INTERVAL_HOURS = Math.max(1, Number.parseInt(process.env.BACKUP_INTERVAL_HOURS || '24', 10) || 24);
 const BACKUP_RETENTION = Math.max(1, Number.parseInt(process.env.BACKUP_RETENTION || '14', 10) || 14);
+const REALM_KEY = '_realm';
 let writeQueue = Promise.resolve();
 
 app.use(express.json({ limit: '1mb' }));
@@ -26,6 +27,29 @@ async function loadUsers() {
     console.error('Error loading users:', err);
     throw new Error('Unable to read tavern data');
   }
+}
+function defaultRealm() { return { templates: [], customCategories: [], revision: 0 }; }
+function realUserEntries(users) { return Object.entries(users).filter(([id]) => id !== REALM_KEY); }
+function realmData(users) {
+  if (users[REALM_KEY] && typeof users[REALM_KEY] === 'object' && !Array.isArray(users[REALM_KEY])) {
+    return {
+      templates: Array.isArray(users[REALM_KEY].templates) ? users[REALM_KEY].templates : [],
+      customCategories: Array.isArray(users[REALM_KEY].customCategories) ? users[REALM_KEY].customCategories : [],
+      revision: Number.isInteger(users[REALM_KEY].revision) ? users[REALM_KEY].revision : 0
+    };
+  }
+  const templates = new Map();
+  const customCategories = new Map();
+  for (const [, user] of realUserEntries(users)) {
+    for (const template of user?.state?.templates || []) if (template?.id) templates.set(template.id, template);
+    for (const category of user?.state?.customCategories || []) if (category?.id) customCategories.set(category.id, category);
+  }
+  return { templates: [...templates.values()], customCategories: [...customCategories.values()], revision: 0 };
+}
+function ensureRealm(users) {
+  const realm = realmData(users);
+  users[REALM_KEY] = realm;
+  return realm;
 }
 async function saveUsers(users) {
   await createScheduledBackup();
@@ -83,8 +107,15 @@ function validState(state) {
   if (!Number.isFinite(state.level) || state.level < 1 || state.level > 100001) return 'Invalid level value.';
   return null;
 }
+function validRealm(realm) {
+  return realm && typeof realm === 'object' && !Array.isArray(realm)
+    && Array.isArray(realm.templates) && realm.templates.length <= 250
+    && Array.isArray(realm.customCategories) && realm.customCategories.length <= 100;
+}
 function validBackupUsers(users) {
-  return users && typeof users === 'object' && !Array.isArray(users) && Object.values(users).every(user =>
+  return users && typeof users === 'object' && !Array.isArray(users)
+    && (!users[REALM_KEY] || validRealm(users[REALM_KEY]))
+    && realUserEntries(users).every(([, user]) =>
     user && typeof user === 'object' && validText(user.name, 50) && typeof user.avatar === 'string'
     && user.avatar.length <= 16 && !validState(user.state)
   );
@@ -96,6 +127,14 @@ function backupPath(name) {
 function defaultState() {
   return { quests: [], completed: [], archived: [], templates: [], activity: [], xp: 0, level: 1, streak: 0,
     lastCompletedDate: null, filters: { main: 'all', side: 'all' }, customCategories: [] };
+}
+async function migrateRealmData() {
+  await withUserMutation(async users => {
+    if (!users[REALM_KEY]) {
+      ensureRealm(users);
+      await writeUsers(users);
+    }
+  });
 }
 
 app.get('/api/health', async (req, res) => {
@@ -135,7 +174,7 @@ app.post('/api/backups/:name/restore', async (req, res, next) => {
 app.get('/api/users', async (req, res, next) => {
   try {
     const users = await loadUsers();
-    res.json({ success: true, users: Object.entries(users).map(([id, data]) => ({
+    res.json({ success: true, users: realUserEntries(users).map(([id, data]) => ({
       id, name: data.name, avatar: data.avatar, level: data.state?.level || 1,
       questCount: (data.state?.quests?.length || 0) + (data.state?.completed?.length || 0)
     })) });
@@ -158,15 +197,17 @@ app.post('/api/users', async (req, res, next) => {
 app.get('/api/state', async (req, res, next) => {
   try {
     if (!req.query.userId) return res.status(400).json({ success: false, error: 'User ID required' });
-    const user = (await loadUsers())[req.query.userId];
+    const users = await loadUsers();
+    const user = users[req.query.userId];
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
-    res.json({ success: true, data: { ...user.state, _revision: user.revision || 0 } });
+    const realm = realmData(users);
+    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, _revision: user.revision || 0, _realmRevision: realm.revision } });
   } catch (err) { next(err); }
 });
 app.put('/api/state', async (req, res, next) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ success: false, error: 'User ID required' });
-  const { _revision, ...state } = req.body || {};
+  const { _revision, _realmRevision, ...state } = req.body || {};
   const validationError = validState(state);
   if (validationError) return res.status(400).json({ success: false, error: validationError });
   if (!Number.isInteger(_revision) || _revision < 0) return res.status(400).json({ success: false, error: 'A state revision is required.' });
@@ -176,8 +217,25 @@ app.put('/api/state', async (req, res, next) => {
       if (!user) return { status: 404, body: { success: false, error: 'User not found' } };
       const currentRevision = user.revision || 0;
       if (_revision !== currentRevision) return { status: 409, body: { success: false, conflict: true, error: 'This character changed in another session. Reload the latest state.' } };
-      user.state = state; user.revision = currentRevision + 1; await saveUsers(users);
+      const realm = ensureRealm(users);
+      user.state = { ...state, templates: realm.templates, customCategories: realm.customCategories }; user.revision = currentRevision + 1; await saveUsers(users);
       return { status: 200, body: { success: true, revision: user.revision } };
+    });
+    res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
+app.put('/api/realm', async (req, res, next) => {
+  const { _realmRevision, templates, customCategories } = req.body || {};
+  if (!Number.isInteger(_realmRevision) || _realmRevision < 0 || !validRealm({ templates, customCategories })) {
+    return res.status(400).json({ success: false, error: 'Valid shared realm data and revision are required.' });
+  }
+  try {
+    const result = await withUserMutation(async users => {
+      const realm = ensureRealm(users);
+      if (_realmRevision !== realm.revision) return { status: 409, body: { success: false, conflict: true, error: 'The shared realm changed. Reload the latest locations and templates.' } };
+      users[REALM_KEY] = { templates, customCategories, revision: realm.revision + 1 };
+      await saveUsers(users);
+      return { status: 200, body: { success: true, realm: users[REALM_KEY] } };
     });
     res.status(result.status).json(result.body);
   } catch (err) { next(err); }
@@ -208,4 +266,4 @@ app.delete('/api/users/:userId', async (req, res, next) => {
 });
 app.use((err, req, res, next) => { console.error('Request failed:', err); res.status(500).json({ success: false, error: 'The tavern server could not complete that request.' }); });
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-ensureDataDir().then(() => app.listen(PORT, () => console.log(`The Tavern of Quests is open on port ${PORT}`)));
+ensureDataDir().then(migrateRealmData).then(() => app.listen(PORT, () => console.log(`The Tavern of Quests is open on port ${PORT}`)));

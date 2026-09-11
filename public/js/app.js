@@ -2,7 +2,7 @@ import { renderCharacterSelect } from './components/CharacterSelect.js';
 import { renderQuestBoard } from './components/QuestBoard.js';
 import { renderCompletedQuests } from './components/CompletedQuests.js';
 import { openAdminPanel } from './components/AdminPanel.js';
-import { loadState, saveState, loadUsers } from './services/api.js';
+import { loadState, saveState, saveRealm, loadUsers } from './services/api.js';
 import { createParticles, showToast, showUndoToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
 import { getAllCategories, getCategoryById, getCategoryTagClass } from './utils/categoryUtils.js';
 import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
@@ -29,7 +29,8 @@ window.state = {
   streak: 0,
   lastCompletedDate: null,
   filters: { main: 'all', side: 'all' },
-  customCategories: []
+  customCategories: [],
+  _realmRevision: 0
 };
 
 window.currentUserId = localStorage.getItem('tavern_current_user') || null;
@@ -192,6 +193,7 @@ async function loadAppState() {
     if (!Array.isArray(window.state.customCategories)) window.state.customCategories = [];
     if (!Array.isArray(window.state.archived)) window.state.archived = [];
     if (!Array.isArray(window.state.templates)) window.state.templates = [];
+    if (!Number.isInteger(window.state._realmRevision)) window.state._realmRevision = 0;
     if (!Array.isArray(window.state.activity)) window.state.activity = [];
     
     window.state.quests.forEach(q => { if (!q.priority) q.priority = 'medium'; });
@@ -312,6 +314,24 @@ async function saveStateWrapper() {
 }
 
 window.saveStateWrapper = saveStateWrapper;
+
+async function saveSharedRealm() {
+  const result = await saveRealm({
+    _realmRevision: window.state._realmRevision || 0,
+    templates: window.state.templates || [],
+    customCategories: window.state.customCategories || []
+  });
+  if (!result.success || !result.realm) {
+    showToast('⚠️', 'Realm Save Failed', result.error || 'Could not save the shared locations and templates.');
+    return false;
+  }
+  window.state.templates = result.realm.templates || [];
+  window.state.customCategories = result.realm.customCategories || [];
+  window.state._realmRevision = result.realm.revision || 0;
+  return await saveStateWrapper();
+}
+
+window.saveSharedRealm = saveSharedRealm;
 
 async function doSave() {
   window.connectionStatus = 'syncing';
@@ -1053,7 +1073,7 @@ window.createCategory = async () => {
     name, emoji: window.selectedCategoryEmoji, builtin: false
   };
   window.state.customCategories.push(newCat);
-  const saved = await saveStateWrapper();
+  const saved = await saveSharedRealm();
   if (saved) {
     window.selectedCategoryEmoji = null;
     showToast('📍', 'Location Created!', `"${name}" added.`);
@@ -1120,7 +1140,7 @@ async function deleteCategory(catId) {
   window.state.customCategories = window.state.customCategories.filter(c => c.id !== catId);
   if (window.state.filters.main === catId) window.state.filters.main = 'all';
   if (window.state.filters.side === catId) window.state.filters.side = 'all';
-  const saved = await saveStateWrapper();
+  const saved = await saveSharedRealm();
   if (saved) {
     showToast('🗑️', 'Location Deleted', 'Location removed.');
     window.openCategoryManager();

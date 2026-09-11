@@ -33,23 +33,23 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
     </div>
     
     <div class="admin-section">
-      <div class="admin-section-title">📋 Quest Templates <span style="font-size:0.8rem; opacity:0.7;">(${templateCount})</span></div>
+      <div class="admin-section-title">📋 Shared Quest Templates <span style="font-size:0.8rem; opacity:0.7;">(${templateCount})</span></div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.openTemplateManager()" style="grid-column:1/-1;">
           <span class="admin-icon">📋</span>
           <span>Manage Templates</span>
-          <span class="admin-label">Create, edit, or remove quest templates</span>
+          <span class="admin-label">Shared by every adventurer</span>
         </button>
       </div>
     </div>
     
     <div class="admin-section">
-      <div class="admin-section-title">📍 Locations <span style="font-size:0.8rem; opacity:0.7;">(${customCatCount} custom)</span></div>
+      <div class="admin-section-title">📍 Shared Locations <span style="font-size:0.8rem; opacity:0.7;">(${customCatCount} custom)</span></div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.openCategoryManager()" style="grid-column:1/-1;">
           <span class="admin-icon">📍</span>
           <span>Manage Locations</span>
-          <span class="admin-label">Create or remove realm locations</span>
+          <span class="admin-label">Shared by every adventurer</span>
         </button>
       </div>
     </div>

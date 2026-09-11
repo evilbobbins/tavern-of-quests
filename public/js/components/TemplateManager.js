@@ -126,7 +126,7 @@ window.createTemplate = async () => {
   window.state.templates.push(template);
   window.recordActivity?.('📋', `Created template “${name}”`);
   
-  const saved = await window.saveStateWrapper();
+  const saved = await window.saveSharedRealm();
   if (saved) {
     showToast('📋', 'Template Created!', `"${name}" template added.`);
     // Close current modal before opening refreshed version
@@ -157,7 +157,7 @@ window.saveQuestFormAsTemplate = async () => {
   if (!window.state.templates) window.state.templates = [];
   window.state.templates.push(template);
   window.recordActivity?.('📋', `Saved “${name}” as a template`);
-  const saved = await window.saveStateWrapper();
+  const saved = await window.saveSharedRealm();
   if (saved) showToast('📋', 'Template Saved!', `“${name}” is ready to reuse.`);
   else { window.state.templates.pop(); showToast('⚠️', 'Save Failed', 'Could not save template.'); }
 };
@@ -244,7 +244,7 @@ window.saveTemplateEdit = async (templateId) => {
   template.xp = parseInt(document.getElementById('edit-template-xp').value);
   template.description = document.getElementById('edit-template-desc').value.trim();
   
-  const saved = await window.saveStateWrapper();
+  const saved = await window.saveSharedRealm();
   if (saved) {
     showToast('✏️', 'Template Updated!', `"${name}" template modified.`);
     closeTopModal();
@@ -264,7 +264,7 @@ window.deleteTemplate = async (templateId) => {
   const backup = [...(window.state.templates || [])];
   window.state.templates = window.state.templates.filter(t => t.id !== templateId);
   
-  const saved = await window.saveStateWrapper();
+  const saved = await window.saveSharedRealm();
   if (saved) {
     showToast('🗑️', 'Template Deleted', `"${template.name}" template removed.`);
     closeTopModal();
