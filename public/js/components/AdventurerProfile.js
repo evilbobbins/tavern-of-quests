@@ -39,7 +39,7 @@ export function openAdventurerProfile(state, adventurer) {
   const rankHtml = rankAchievements.map(renderAchievement).join('');
   const achievementHtml = achievements.map(renderAchievement).join('');
 
-  createModal(`
+  const overlay = createModal(`
     <div class="adventurer-profile" role="dialog" aria-modal="true" aria-label="Adventurer achievements">
       <div class="modal-header">
         <h3 class="modal-title">🏆 Adventurer's Chronicle</h3>
@@ -57,8 +57,9 @@ export function openAdventurerProfile(state, adventurer) {
       <div class="adventurer-achievement-heading"><span>Guild Ranks</span><strong>${rankAchievements.filter(rank => rank.unlocked).length} / ${rankAchievements.length}</strong></div>
       <div class="achievement-list rank-achievement-list">${rankHtml}</div>
       <div class="adventurer-achievement-heading"><span>Achievements</span><strong>${earned} / ${rankAchievements.length + achievements.length}</strong></div>
-      <div class="achievement-list">${achievementHtml}</div>
+      <div class="achievement-list achievement-grid">${achievementHtml}</div>
       <div class="modal-actions"><button class="btn-modal btn-cancel" type="button" onclick="window.closeTopModal()">Close</button></div>
     </div>
   `);
+  overlay.querySelector('.modal')?.classList.add('adventurer-profile-modal');
 }

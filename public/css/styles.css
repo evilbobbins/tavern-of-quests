@@ -222,6 +222,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 @keyframes fade-in { 0% { opacity: 0; } 100% { opacity: 1; } }
 .modal { background: linear-gradient(135deg, #3a2415, #2c1810); border: 3px solid var(--gold); border-radius: 16px; padding: 0; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 40px rgba(212,168,67,0.4); animation: modal-appear 0.4s ease-out; }
 .modal.admin-modal { max-width: 920px; }
+.modal.adventurer-profile-modal { max-width: 860px; }
 .modal-inner { position: relative; padding: 28px; }
 .modal-inner::before { content: ''; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px; border: 1px solid rgba(212,168,67,0.3); border-radius: 10px; pointer-events: none; }
 .modal.wide { max-width: 700px; }
@@ -488,6 +489,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .adventurer-stat-grid span { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .65rem; margin-top: 3px; text-transform: uppercase; }
 .adventurer-achievement-heading { border-bottom: 1px solid rgba(212,168,67,.3); color: var(--gold-light); display: flex; font-family: 'Cinzel', serif; font-size: .82rem; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
 .achievement-list { display: flex; flex-direction: column; gap: 8px; }
+.achievement-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); }
 .rank-achievement-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); margin-bottom:18px; }
 .achievement-card { align-items: center; background: rgba(26,15,10,.38); border: 1px solid rgba(212,168,67,.16); border-radius: 8px; display: flex; gap: 12px; padding: 10px; }
 .achievement-card.unlocked { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.1); }
@@ -646,6 +648,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   .modal-title { font-size: 1.3rem; }
   .admin-grid { grid-template-columns: 1fr; }
   .admin-grimoire-grid { grid-template-columns: 1fr; }
+  .achievement-grid { grid-template-columns:1fr; }
   .rank-achievement-list { grid-template-columns:1fr; }
   .emoji-grid { grid-template-columns: repeat(8, 1fr); }
   .char-grid { grid-template-columns: 1fr 1fr; }
