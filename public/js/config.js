@@ -14,5 +14,7 @@ export const CONFIG = {
 export const BUILTIN_CATEGORIES = [
   { id: 'household', name: 'The Castle', emoji: '\u{1F3F0}', builtin: true },
   { id: 'technology', name: "The Wizard's Lair", emoji: '\u{1F9D9}', builtin: true },
-  { id: 'academy', name: 'Mooncrest Academy', emoji: '\u{1F393}', builtin: true }
+  { id: 'academy', name: 'Mooncrest Academy', emoji: '\u{1F393}', builtin: true },
+  { id: 'dragons-den', name: "Dragon's Den", emoji: '\u{1F409}', builtin: true },
+  { id: 'bog-of-eternal-stench', name: 'Bog of Eternal Stench', emoji: '\u{1F9EA}', builtin: true }
 ];

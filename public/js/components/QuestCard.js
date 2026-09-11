@@ -6,7 +6,7 @@ export function createQuestCard(quest, category) {
   card.className = `quest-card priority-${quest.priority}`;
   
   const tagClass = category.builtin
-    ? (category.id === 'household' ? 'tag-household' : category.id === 'academy' ? 'tag-academy' : 'tag-technology')
+    ? (category.id === 'household' ? 'tag-household' : category.id === 'academy' ? 'tag-academy' : category.id === 'dragons-den' ? 'tag-dragons-den' : category.id === 'bog-of-eternal-stench' ? 'tag-bog' : 'tag-technology')
     : 'tag-custom';
   
   // Check if there are other users to share with

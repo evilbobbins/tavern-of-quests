@@ -16,7 +16,11 @@ export function getCategoryById(id, customCategories = []) {
 export function getCategoryTagClass(category) {
   if (!category) return 'tag-custom';
   if (category.builtin) {
-    return category.id === 'household' ? 'tag-household' : category.id === 'academy' ? 'tag-academy' : 'tag-technology';
+    if (category.id === 'household') return 'tag-household';
+    if (category.id === 'academy') return 'tag-academy';
+    if (category.id === 'dragons-den') return 'tag-dragons-den';
+    if (category.id === 'bog-of-eternal-stench') return 'tag-bog';
+    return 'tag-technology';
   }
   return 'tag-custom';
 }

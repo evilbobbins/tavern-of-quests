@@ -6,19 +6,21 @@ const DEFAULT_REGIONS = [
   { id: 'household', name: 'The Castle', icon: '🏰', description: 'Home, routines, and everyday comforts.' },
   { id: 'technology', name: "The Wizard's Lair", icon: '🧙', description: 'Projects, repairs, and bright new ideas.' },
   { id: 'academy', name: 'Mooncrest Academy', icon: '🎓', description: 'Learning, research, and ambitious study quests.' },
+  { id: 'dragons-den', name: "Dragon's Den", icon: '🐉', description: 'Fearsome challenges, bold ambitions, and treasure-worthy quests.' },
+  { id: 'bog-of-eternal-stench', name: 'Bog of Eternal Stench', icon: '🧪', description: 'Messy chores and murky errands best conquered with courage.' },
   { id: 'unassigned', name: 'The Crossroads', icon: '🧭', description: 'Unsorted quests waiting for a place.' }
 ];
 
 function getRegions(customCategories = []) {
   const custom = getAllCategories(customCategories)
-    .filter(category => !['household', 'technology', 'academy'].includes(category.id))
+    .filter(category => !['household', 'technology', 'academy', 'dragons-den', 'bog-of-eternal-stench'].includes(category.id))
     .map((category, index) => ({
       id: category.id,
       name: index % 2 ? 'The Workshop Annex' : 'Garden Glen',
       icon: category.emoji || '🗺️',
       description: `${category.name} quests gathered together.`
     }));
-  return [...DEFAULT_REGIONS.slice(0, 3), ...custom, DEFAULT_REGIONS[3]];
+  return [...DEFAULT_REGIONS.slice(0, 5), ...custom, DEFAULT_REGIONS[5]];
 }
 
 function regionForQuest(quest, regions) {

@@ -29,7 +29,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 ### 🗺️ One shared realm
 
 - Explore the **Realm Map** to see active quests grouped by location.
-- Start with **The Castle**, **The Wizard’s Lair**, and **Mooncrest Academy**, then add more locations through the Tavern Keeper.
+- Start with **The Castle**, **The Wizard’s Lair**, **Mooncrest Academy**, **Dragon's Den**, and the **Bog of Eternal Stench**, then add more locations through the Tavern Keeper.
 - Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options.
 - The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including the current **Runefall Champion**.
 
@@ -44,7 +44,8 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 
 - A playable tavern-themed block-stacking mini-game built into the status bar.
 - Stack enchanted runes, clear rows, gain score, and survive ever-faster revel levels.
-- Includes next-rune preview, pause/restart, keyboard controls, and touch-friendly buttons for smaller screens.
+- Chain two, three, or four rows at once for escalating in-board celebration effects.
+- Includes next-rune and held-rune previews, a one-use-per-rune hold swap, pause/restart, keyboard controls, and touch-friendly buttons for smaller screens.
 - Completed games with a score are recorded in a shared realm leaderboard with the adventurer, score, and date achieved.
 - The game table displays the top three scores; first place earns the title **Runefall Champion**.
 - Open it with **🎲 Tavern Games** without leaving the quest board.
