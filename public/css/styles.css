@@ -54,6 +54,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 @keyframes title-glow { 0% { text-shadow: 0 0 10px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } 100% { text-shadow: 0 0 20px rgba(212,168,67,0.7), 0 0 40px rgba(212,168,67,0.3), 2px 2px 4px rgba(0,0,0,0.8); } }
 
 .stats-bar { position: relative; z-index: 3; background: linear-gradient(180deg, var(--dark-wood) 0%, #1a0f0a 100%); border-bottom: 2px solid var(--gold-dark); padding: 12px 20px; display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+.realm-nav { align-items:center; display:flex; flex-basis:100%; flex-wrap:wrap; gap:12px; justify-content:center; }
 .connection-indicator { align-items:center; border:1px solid rgba(212,168,67,.35); border-radius:20px; color:var(--parchment-dark); display:flex; font:700 .7rem 'Cinzel',serif; gap:6px; letter-spacing:.03em; padding:5px 9px; text-transform:uppercase; }
 .connection-indicator { gap:0; padding:6px; }
 .connection-indicator #connection-label { display:none; }
@@ -655,6 +656,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   .quest-entry-summary { align-items: flex-start; flex-direction: column; }
   .quest-entry-actions { justify-content: flex-start; width: 100%; }
   .stats-bar { gap: 10px; }
+  .realm-nav { gap:8px; }
   .header-title { font-size: 1.6rem; }
   .modal-inner { padding: 20px; }
   .modal-title { font-size: 1.3rem; }
