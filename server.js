@@ -135,7 +135,7 @@ function validBackupUsers(users) {
   );
 }
 function backupPath(name) {
-  return typeof name === 'string' && /^(automatic|manual|pre-restore)-[\w-]+\.json$/.test(name)
+  return typeof name === 'string' && /^(automatic|manual|pre-restore|pre-import)-[\w-]+\.json$/.test(name)
     ? path.join(BACKUP_DIR, name) : null;
 }
 function defaultState() {
@@ -182,6 +182,24 @@ app.post('/api/backups/:name/restore', async (req, res, next) => {
       return { ok: true, safetyBackup };
     });
     if (!result.ok) return res.status(400).json({ success: false, error: result.error });
+    res.json({ success: true, safetyBackup: result.safetyBackup });
+  } catch (err) { next(err); }
+});
+app.get('/api/realm/export', async (req, res, next) => {
+  try {
+    const realm = await loadUsers();
+    res.json({ success: true, exportedAt: new Date().toISOString(), realm });
+  } catch (err) { next(err); }
+});
+app.post('/api/realm/import', async (req, res, next) => {
+  const importedRealm = req.body?.realm;
+  if (!validBackupUsers(importedRealm)) return res.status(400).json({ success: false, error: 'That file is not a valid Tavern realm export.' });
+  try {
+    const result = await withUserMutation(async currentUsers => {
+      const safetyBackup = await writeBackup(currentUsers, 'pre-import');
+      await writeUsers(importedRealm);
+      return { safetyBackup };
+    });
     res.json({ success: true, safetyBackup: result.safetyBackup });
   } catch (err) { next(err); }
 });
