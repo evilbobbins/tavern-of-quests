@@ -488,11 +488,14 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .adventurer-stat-grid span { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .65rem; margin-top: 3px; text-transform: uppercase; }
 .adventurer-achievement-heading { border-bottom: 1px solid rgba(212,168,67,.3); color: var(--gold-light); display: flex; font-family: 'Cinzel', serif; font-size: .82rem; justify-content: space-between; margin-bottom: 10px; padding-bottom: 8px; }
 .achievement-list { display: flex; flex-direction: column; gap: 8px; }
+.rank-achievement-list { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); margin-bottom:18px; }
 .achievement-card { align-items: center; background: rgba(26,15,10,.38); border: 1px solid rgba(212,168,67,.16); border-radius: 8px; display: flex; gap: 12px; padding: 10px; }
 .achievement-card.unlocked { border-color: rgba(212,168,67,.55); background: rgba(212,168,67,.1); }
 .achievement-card.locked { opacity: .62; }
 .achievement-icon { font-size: 1.35rem; width: 28px; }
 .achievement-card strong, .achievement-card span:not(.achievement-icon) { display: block; }
+.achievement-card.locked { opacity:.58; }
+.achievement-card.unlocked { background:rgba(212,168,67,.12); border-color:rgba(212,168,67,.45); }
 .achievement-card strong { color: var(--parchment); font-family: 'Cinzel', serif; font-size: .82rem; }
 .achievement-card span:not(.achievement-icon) { color: var(--parchment-dark); font-size: .8rem; margin-top: 2px; }
 
@@ -643,6 +646,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   .modal-title { font-size: 1.3rem; }
   .admin-grid { grid-template-columns: 1fr; }
   .admin-grimoire-grid { grid-template-columns: 1fr; }
+  .rank-achievement-list { grid-template-columns:1fr; }
   .emoji-grid { grid-template-columns: repeat(8, 1fr); }
   .char-grid { grid-template-columns: 1fr 1fr; }
   .pagination-controls { gap: 10px; }
