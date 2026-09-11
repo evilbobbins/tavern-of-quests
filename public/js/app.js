@@ -2,7 +2,7 @@ import { renderCharacterSelect } from './components/CharacterSelect.js';
 import { renderQuestBoard } from './components/QuestBoard.js';
 import { renderCompletedQuests } from './components/CompletedQuests.js';
 import { openAdminPanel } from './components/AdminPanel.js';
-import { loadState, saveState, saveRealm, loadUsers } from './services/api.js';
+import { loadState, saveState, saveRealm, recordRunefallScore, resetRunefallScores, loadUsers } from './services/api.js';
 import { createParticles, showToast, showUndoToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
 import { getAllCategories, getCategoryById, getCategoryTagClass } from './utils/categoryUtils.js';
 import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
@@ -31,6 +31,7 @@ window.state = {
   lastCompletedDate: null,
   filters: { main: 'all', side: 'all' },
   customCategories: [],
+  runefallScores: [],
   _realmRevision: 0
 };
 
@@ -69,7 +70,16 @@ window.openAdventurerProfile = () => openAdventurerProfile(window.state, {
   avatar: document.getElementById('current-user-avatar')?.textContent
 });
 window.openActivityLog = () => openActivityLog(window.state.activity || []);
-window.openTavernBlocks = openTavernBlocks;
+window.openTavernBlocks = () => openTavernBlocks({
+  scores: window.state.runefallScores || [],
+  onScore: async ({ score, lines, level }) => {
+    const result = await recordRunefallScore(window.currentUserId, score, lines, level);
+    if (!result.success || !result.realm) throw new Error(result.error || 'Could not record that Runefall score.');
+    window.state.runefallScores = result.realm.runefallScores || [];
+    window.state._realmRevision = result.realm.revision || window.state._realmRevision;
+    return window.state.runefallScores;
+  }
+});
 window.closeTopModal = closeTopModal;
 
 function openPostQuestModal(startWithTemplate = false) {
@@ -135,7 +145,7 @@ async function init() {
   
   document.getElementById('btn-create-char')?.addEventListener('click', openCreateCharModal);
   document.getElementById('btn-roster')?.addEventListener('click', showCharacterSelect);
-  document.getElementById('btn-tavern-games')?.addEventListener('click', openTavernBlocks);
+  document.getElementById('btn-tavern-games')?.addEventListener('click', () => window.openTavernBlocks());
   document.getElementById('btn-realm')?.addEventListener('click', () => window.openRealmDashboard());
   document.getElementById('btn-realm-map')?.addEventListener('click', () => window.openRealmMap());
   document.getElementById('btn-open-post-quest')?.addEventListener('click', () => window.openPostQuestModal());
@@ -196,6 +206,7 @@ async function loadAppState() {
     if (!Array.isArray(window.state.customCategories)) window.state.customCategories = [];
     if (!Array.isArray(window.state.archived)) window.state.archived = [];
     if (!Array.isArray(window.state.templates)) window.state.templates = [];
+    if (!Array.isArray(window.state.runefallScores)) window.state.runefallScores = [];
     if (!Number.isInteger(window.state._realmRevision)) window.state._realmRevision = 0;
     if (!Array.isArray(window.state.activity)) window.state.activity = [];
     
@@ -931,6 +942,16 @@ window.adminResetXP = async () => {
   window.state.level = 1;
   const saved = await saveStateWrapper();
   if (saved) { window.renderAll(); closeTopModal(); showToast('📉', 'Stats Reset', 'Returned to Level 1.'); }
+};
+
+window.adminResetRunefallScores = async () => {
+  if (!confirm('Reset the shared Runefall scoreboard? This removes every recorded score from the realm.')) return;
+  const result = await resetRunefallScores();
+  if (!result.success || !result.realm) return showToast('⚠️', 'Reset Failed', result.error || 'Could not reset the Runefall scoreboard.');
+  window.state.runefallScores = [];
+  window.state._realmRevision = result.realm.revision || window.state._realmRevision;
+  closeTopModal();
+  showToast('🏆', 'Scoreboard Reset', 'The Runefall score ledger has been cleared.');
 };
 
 window.adminExportData = () => {

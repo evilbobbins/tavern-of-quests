@@ -28,13 +28,14 @@ async function loadUsers() {
     throw new Error('Unable to read tavern data');
   }
 }
-function defaultRealm() { return { templates: [], customCategories: [], revision: 0 }; }
+function defaultRealm() { return { templates: [], customCategories: [], runefallScores: [], revision: 0 }; }
 function realUserEntries(users) { return Object.entries(users).filter(([id]) => id !== REALM_KEY); }
 function realmData(users) {
   if (users[REALM_KEY] && typeof users[REALM_KEY] === 'object' && !Array.isArray(users[REALM_KEY])) {
     return {
       templates: Array.isArray(users[REALM_KEY].templates) ? users[REALM_KEY].templates : [],
       customCategories: Array.isArray(users[REALM_KEY].customCategories) ? users[REALM_KEY].customCategories : [],
+      runefallScores: normalizeRunefallScores(users[REALM_KEY].runefallScores),
       revision: Number.isInteger(users[REALM_KEY].revision) ? users[REALM_KEY].revision : 0
     };
   }
@@ -44,7 +45,7 @@ function realmData(users) {
     for (const template of user?.state?.templates || []) if (template?.id) templates.set(template.id, template);
     for (const category of user?.state?.customCategories || []) if (category?.id) customCategories.set(category.id, category);
   }
-  return { templates: [...templates.values()], customCategories: [...customCategories.values()], revision: 0 };
+  return { templates: [...templates.values()], customCategories: [...customCategories.values()], runefallScores: [], revision: 0 };
 }
 function ensureRealm(users) {
   const realm = realmData(users);
@@ -110,7 +111,20 @@ function validState(state) {
 function validRealm(realm) {
   return realm && typeof realm === 'object' && !Array.isArray(realm)
     && Array.isArray(realm.templates) && realm.templates.length <= 250
-    && Array.isArray(realm.customCategories) && realm.customCategories.length <= 100;
+    && Array.isArray(realm.customCategories) && realm.customCategories.length <= 100
+    && (realm.runefallScores === undefined || (Array.isArray(realm.runefallScores) && realm.runefallScores.length <= 100 && realm.runefallScores.every(validRunefallScore)));
+}
+function validRunefallScore(entry) {
+  return entry && typeof entry === 'object' && validText(entry.id, 80) && validText(entry.userId, 80)
+    && validText(entry.name, 50) && typeof entry.avatar === 'string' && entry.avatar.length <= 16
+    && Number.isInteger(entry.score) && entry.score > 0 && entry.score <= 10000000
+    && Number.isInteger(entry.lines) && entry.lines >= 0 && entry.lines <= 100000
+    && Number.isInteger(entry.level) && entry.level >= 1 && entry.level <= 100000
+    && typeof entry.achievedAt === 'string' && !Number.isNaN(Date.parse(entry.achievedAt));
+}
+function normalizeRunefallScores(scores) {
+  return (Array.isArray(scores) ? scores : []).filter(validRunefallScore)
+    .sort((a, b) => b.score - a.score || new Date(a.achievedAt) - new Date(b.achievedAt)).slice(0, 100);
 }
 function validBackupUsers(users) {
   return users && typeof users === 'object' && !Array.isArray(users)
@@ -201,7 +215,7 @@ app.get('/api/state', async (req, res, next) => {
     const user = users[req.query.userId];
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
     const realm = realmData(users);
-    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, _revision: user.revision || 0, _realmRevision: realm.revision } });
+    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, runefallScores: realm.runefallScores, _revision: user.revision || 0, _realmRevision: realm.revision } });
   } catch (err) { next(err); }
 });
 app.put('/api/state', async (req, res, next) => {
@@ -233,11 +247,40 @@ app.put('/api/realm', async (req, res, next) => {
     const result = await withUserMutation(async users => {
       const realm = ensureRealm(users);
       if (_realmRevision !== realm.revision) return { status: 409, body: { success: false, conflict: true, error: 'The shared realm changed. Reload the latest locations and templates.' } };
-      users[REALM_KEY] = { templates, customCategories, revision: realm.revision + 1 };
+      users[REALM_KEY] = { templates, customCategories, runefallScores: realm.runefallScores, revision: realm.revision + 1 };
       await saveUsers(users);
       return { status: 200, body: { success: true, realm: users[REALM_KEY] } };
     });
     res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
+app.post('/api/runefall-scores', async (req, res, next) => {
+  const { userId, score, lines, level } = req.body || {};
+  if (!validText(userId, 80) || !Number.isInteger(score) || score <= 0 || score > 10000000 || !Number.isInteger(lines) || lines < 0 || lines > 100000 || !Number.isInteger(level) || level < 1 || level > 100000) {
+    return res.status(400).json({ success: false, error: 'A valid Runefall score is required.' });
+  }
+  try {
+    const result = await withUserMutation(async users => {
+      const user = users[userId];
+      if (!user) return { status: 404, body: { success: false, error: 'Adventurer not found.' } };
+      const realm = ensureRealm(users);
+      const entry = { id: `runefall_${Date.now().toString(36)}${crypto.randomBytes(3).toString('hex')}`, userId, name: user.name, avatar: user.avatar, score, lines, level, achievedAt: new Date().toISOString() };
+      users[REALM_KEY] = { ...realm, runefallScores: normalizeRunefallScores([...realm.runefallScores, entry]), revision: realm.revision + 1 };
+      await saveUsers(users);
+      return { status: 201, body: { success: true, entry, realm: users[REALM_KEY] } };
+    });
+    res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
+app.post('/api/runefall-scores/reset', async (req, res, next) => {
+  try {
+    const result = await withUserMutation(async users => {
+      const realm = ensureRealm(users);
+      users[REALM_KEY] = { ...realm, runefallScores: [], revision: realm.revision + 1 };
+      await saveUsers(users);
+      return users[REALM_KEY];
+    });
+    res.json({ success: true, realm: result });
   } catch (err) { next(err); }
 });
 app.put('/api/users/:userId', async (req, res, next) => {

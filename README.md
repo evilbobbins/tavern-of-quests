@@ -31,7 +31,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Explore the **Realm Map** to see active quests grouped by location.
 - Start with **The Castle**, **The Wizard’s Lair**, and **Mooncrest Academy**, then add more locations through the Tavern Keeper.
 - Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options.
-- The **Realm Chronicle** offers a high-level view of the party’s activity and progress.
+- The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including the current **Runefall Champion**.
 
 ### 🗄️ Backup Vault
 
@@ -45,12 +45,15 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - A playable tavern-themed block-stacking mini-game built into the status bar.
 - Stack enchanted runes, clear rows, gain score, and survive ever-faster revel levels.
 - Includes next-rune preview, pause/restart, keyboard controls, and touch-friendly buttons for smaller screens.
+- Completed games with a score are recorded in a shared realm leaderboard with the adventurer, score, and date achieved.
+- The game table displays the top three scores; first place earns the title **Runefall Champion**.
 - Open it with **🎲 Tavern Games** without leaving the quest board.
 
 ### 👑 Tavern Keeper tools
 
 - Manage shared locations and shared quest templates.
 - Open the activity chronicle, backup vault, and character tools.
+- Reset the shared Runefall score ledger through a confirmation-gated scoreboard control.
 - Refresh the current realm from the server and inspect connection status.
 - Reset a character’s streak or progress when appropriate, with guarded destructive actions.
 

@@ -38,6 +38,18 @@ export async function saveRealm(realm) {
   });
 }
 
+export async function recordRunefallScore(userId, score, lines, level) {
+  return await apiFetch('/api/runefall-scores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, score, lines, level })
+  });
+}
+
+export async function resetRunefallScores() {
+  return await apiFetch('/api/runefall-scores/reset', { method: 'POST' });
+}
+
 export async function createUser(name, avatar) {
   return await apiFetch('/api/users', {
     method: 'POST',

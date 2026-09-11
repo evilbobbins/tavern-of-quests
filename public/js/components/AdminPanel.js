@@ -70,6 +70,17 @@ export function openAdminPanel(connectionStatus, lastSaveError, customCategories
         </button>
       </div>
     </div>
+
+    <div class="admin-section">
+      <div class="admin-section-title">🎲 Runefall Scoreboard</div>
+      <div class="admin-grid">
+        <button class="admin-btn" onclick="window.adminResetRunefallScores()" style="grid-column:1/-1;">
+          <span class="admin-icon">🏆</span>
+          <span>Reset Scoreboard</span>
+          <span class="admin-label">Clear all shared Runefall scores</span>
+        </button>
+      </div>
+    </div>
     
     <div class="admin-section">
       <div class="admin-section-title">📜 Backup & Restore</div>

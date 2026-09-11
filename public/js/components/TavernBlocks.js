@@ -1,4 +1,5 @@
 import { createModal, closeModal } from './Modal.js';
+import { escapeHtml } from '../utils/helpers.js';
 
 const SHAPES = [
   { color: '#e5533d', cells: [[1, 1, 1, 1]] },
@@ -12,7 +13,18 @@ const SHAPES = [
 const COLS = 10;
 const ROWS = 20;
 
-export function openTavernBlocks() {
+function formatScoreDate(achievedAt) {
+  const date = new Date(achievedAt);
+  return Number.isNaN(date.getTime()) ? 'Unknown date' : date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderScoreboard(scores) {
+  const topScores = [...scores].sort((a, b) => b.score - a.score || new Date(a.achievedAt) - new Date(b.achievedAt)).slice(0, 3);
+  if (!topScores.length) return '<div class="runefall-empty">No scores yet. Claim the first crown.</div>';
+  return topScores.map((entry, index) => `<div class="runefall-score ${index === 0 ? 'champion' : ''}"><span class="runefall-place">${index === 0 ? '👑' : `#${index + 1}`}</span><span class="runefall-score-avatar">${escapeHtml(entry.avatar || '⚔️')}</span><div><strong>${index === 0 ? 'Champion · ' : ''}${escapeHtml(entry.name)}</strong><small>${formatScoreDate(entry.achievedAt)}</small></div><b>${Number(entry.score).toLocaleString()}</b></div>`).join('');
+}
+
+export function openTavernBlocks({ scores: initialScores = [], onScore = async () => initialScores } = {}) {
   const overlay = createModal(`
     <div class="blocks-modal">
       <div class="blocks-heading"><div><p class="blocks-kicker">THE TAVERN GAME TABLE</p><h2 class="modal-title">✦ Runefall Revel ✦</h2></div><button class="modal-close" id="blocks-close" aria-label="Close game">×</button></div>
@@ -24,19 +36,21 @@ export function openTavernBlocks() {
       </div>
       <div class="blocks-controls" aria-label="Game controls"><button data-action="left" aria-label="Move left">◀</button><button data-action="rotate" class="blocks-rotate" aria-label="Rotate rune">↻</button><button data-action="right" aria-label="Move right">▶</button><button data-action="down" aria-label="Move down">▼</button></div>
       <p class="blocks-keyboard"><kbd>←</kbd><kbd>→</kbd> move &nbsp; <kbd>↑</kbd> turn &nbsp; <kbd>↓</kbd> descend &nbsp; <kbd>Space</kbd> drop &nbsp; <kbd>P</kbd> pause</p>
+      <section class="runefall-scoreboard"><div class="blocks-label">🏆 Runefall Revel — Top Three</div><div id="runefall-scores">${renderScoreboard(initialScores)}</div></section>
     </div>`, cleanup);
 
   const ctx = overlay.querySelector('#blocks-board').getContext('2d');
   const nextCtx = overlay.querySelector('#blocks-next').getContext('2d');
   const overlayEl = overlay.querySelector('#blocks-overlay');
   const startButton = overlay.querySelector('#blocks-start');
-  let board, piece, next, score, lines, level, timer, playing = false, paused = false;
+  const scoreboard = overlay.querySelector('#runefall-scores');
+  let board, piece, next, score, lines, level, timer, playing = false, paused = false, submitted = false, scores = initialScores;
 
   function randomPiece() { const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)]; return { ...shape, cells: shape.cells.map(row => [...row]), x: 0, y: 0 }; }
   function collides(test) { return test.cells.some((row, y) => row.some((cell, x) => cell && (test.x + x < 0 || test.x + x >= COLS || test.y + y >= ROWS || (test.y + y >= 0 && board[test.y + y][test.x + x])))); }
   function updateStats() { overlay.querySelector('#blocks-score').textContent = String(score).padStart(6, '0'); overlay.querySelector('#blocks-lines').textContent = lines; overlay.querySelector('#blocks-level').textContent = level; }
   function spawn() { piece = next; next = randomPiece(); piece.x = Math.floor((COLS - piece.cells[0].length) / 2); piece.y = 0; if (collides(piece)) gameOver(); drawNext(); }
-  function freshGame() { board = Array.from({ length: ROWS }, () => Array(COLS).fill(null)); score = 0; lines = 0; level = 1; next = randomPiece(); piece = null; updateStats(); spawn(); draw(); }
+  function freshGame() { board = Array.from({ length: ROWS }, () => Array(COLS).fill(null)); score = 0; lines = 0; level = 1; submitted = false; next = randomPiece(); piece = null; updateStats(); spawn(); draw(); }
   function move(dx, dy) { if (!playing || paused) return false; piece.x += dx; piece.y += dy; if (collides(piece)) { piece.x -= dx; piece.y -= dy; return false; } draw(); return true; }
   function rotate() { if (!playing || paused) return; const old = piece.cells; piece.cells = old[0].map((_, i) => old.map(row => row[i]).reverse()); if (collides(piece)) { piece.x += piece.x > COLS / 2 ? -1 : 1; if (collides(piece)) { piece.x += piece.x > COLS / 2 ? 1 : -1; piece.cells = old; } } draw(); }
   function lock() { if (!playing || paused) return; piece.cells.forEach((row, y) => row.forEach((cell, x) => { if (cell && piece.y + y >= 0) board[piece.y + y][piece.x + x] = piece.color; })); let cleared = 0; board = board.filter(row => { if (row.every(Boolean)) { cleared++; return false; } return true; }); while (board.length < ROWS) board.unshift(Array(COLS).fill(null)); if (cleared) { lines += cleared; score += [0, 100, 300, 500, 800][cleared] * level; level = Math.floor(lines / 10) + 1; updateStats(); resetTimer(); } spawn(); draw(); }
@@ -47,7 +61,18 @@ export function openTavernBlocks() {
   function drawNext() { nextCtx.clearRect(0, 0, 120, 120); const size = 24; const width = next.cells[0].length * size, height = next.cells.length * size; next.cells.forEach((row, y) => row.forEach((cell, x) => { if (!cell) return; const px = (120 - width) / 2 + x * size, py = (120 - height) / 2 + y * size; nextCtx.fillStyle = next.color; nextCtx.fillRect(px + 1, py + 1, size - 2, size - 2); nextCtx.fillStyle = 'rgba(255,255,255,.25)'; nextCtx.fillRect(px + 4, py + 4, size - 8, 3); })); }
   function resetTimer() { clearInterval(timer); if (playing && !paused) timer = setInterval(tick, Math.max(120, 720 - (level - 1) * 60)); }
   function begin() { freshGame(); playing = true; paused = false; overlayEl.classList.add('hidden'); startButton.textContent = 'Ⅱ Pause'; resetTimer(); }
-  function gameOver() { playing = false; clearInterval(timer); overlayEl.innerHTML = `<span>Hearth Overflow!</span><small>${score.toLocaleString()} renown earned</small>`; overlayEl.classList.remove('hidden'); startButton.textContent = '↻ Revel Again'; }
+  async function submitScore() {
+    if (submitted || score <= 0) return;
+    submitted = true;
+    try {
+      scores = await onScore({ score, lines, level });
+      scoreboard.innerHTML = renderScoreboard(scores);
+      overlayEl.querySelector('small').textContent = `${score.toLocaleString()} renown recorded in the shared ledger`;
+    } catch (err) {
+      overlayEl.querySelector('small').textContent = `${score.toLocaleString()} renown earned · score could not be recorded`;
+    }
+  }
+  function gameOver() { playing = false; clearInterval(timer); overlayEl.innerHTML = `<span>Hearth Overflow!</span><small>${score.toLocaleString()} renown earned</small>`; overlayEl.classList.remove('hidden'); startButton.textContent = '↻ Revel Again'; submitScore(); }
   function togglePause() { if (!playing) return; paused = !paused; startButton.textContent = paused ? '▶ Resume Revel' : 'Ⅱ Pause'; overlayEl.innerHTML = '<span>Revel Paused</span><small>Take a sip, adventurer</small>'; overlayEl.classList.toggle('hidden', !paused); if (paused) clearInterval(timer); else resetTimer(); }
   function keydown(e) { if (!overlay.isConnected) return; if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' '].includes(e.key)) e.preventDefault(); if (e.key === 'ArrowLeft') move(-1, 0); if (e.key === 'ArrowRight') move(1, 0); if (e.key === 'ArrowDown' && !move(0, 1)) lock(); if (e.key === 'ArrowUp') rotate(); if (e.key === ' ') drop(); if (e.key.toLowerCase() === 'p') togglePause(); }
   function cleanup() { clearInterval(timer); document.removeEventListener('keydown', keydown); }
