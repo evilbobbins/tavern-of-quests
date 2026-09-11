@@ -1016,6 +1016,7 @@ window.adminWipeAll = async () => {
 };
 
 window.openCategoryManager = () => {
+  window.selectedCategoryEmoji = null;
   const categories = getAllCategories(window.state.customCategories);
   const categoryListHtml = categories.map(cat => {
     const activeCount = window.state.quests.filter(q => q.category === cat.id).length;
@@ -1061,15 +1062,16 @@ window.openCategoryManager = () => {
     </div>
   `;
   
-  createModal(content);
+  const overlay = createModal(content);
+  overlay.classList.add('location-manager-overlay');
   
-  const grid = document.getElementById('emoji-grid');
+  const grid = overlay.querySelector('#emoji-grid');
   if (grid && EMOJI_LIBRARY) {
     let html = '';
     for (const [category, emojis] of Object.entries(EMOJI_LIBRARY)) {
       html += `<div class="emoji-category-label">${category}</div>`;
       for (const emoji of emojis) {
-        html += `<div class="emoji-cell" onclick="window.selectCategoryEmoji('${emoji}')">${emoji}</div>`;
+        html += `<div class="emoji-cell" onclick="window.selectCategoryEmoji('${emoji}', this)">${emoji}</div>`;
       }
     }
     grid.innerHTML = html;
@@ -1078,12 +1080,20 @@ window.openCategoryManager = () => {
 
 window.selectedCategoryEmoji = null;
 
-window.selectCategoryEmoji = (emoji) => {
+function refreshCategoryManager() {
+  document.querySelectorAll('.location-manager-overlay, .location-reassign-overlay').forEach(modal => modal.remove());
+  window.openCategoryManager();
+}
+
+window.selectCategoryEmoji = (emoji, cell) => {
   window.selectedCategoryEmoji = emoji;
-  document.querySelectorAll('.emoji-cell').forEach(c => c.classList.remove('selected'));
-  event.target.classList.add('selected');
-  document.getElementById('preview-emoji').textContent = emoji;
-  document.getElementById('preview-text').textContent = `Selected: ${emoji}`;
+  const modal = cell?.closest('.location-manager-overlay') || document.querySelector('.location-manager-overlay:last-of-type');
+  modal?.querySelectorAll('.emoji-cell').forEach(c => c.classList.remove('selected'));
+  cell?.classList.add('selected');
+  const previewEmoji = modal?.querySelector('#preview-emoji');
+  const previewText = modal?.querySelector('#preview-text');
+  if (previewEmoji) previewEmoji.textContent = emoji;
+  if (previewText) previewText.textContent = `Selected: ${emoji}`;
 };
 
 window.createCategory = async () => {
@@ -1101,7 +1111,7 @@ window.createCategory = async () => {
   if (saved) {
     window.selectedCategoryEmoji = null;
     showToast('📍', 'Location Created!', `"${name}" added.`);
-    window.openCategoryManager();
+    refreshCategoryManager();
     window.renderAll(); // Immediate UI update
   } else {
     window.state.customCategories.pop();
@@ -1144,7 +1154,8 @@ window.requestDeleteCategory = async (catId) => {
         <button class="btn-modal btn-danger" onclick="window.confirmDeleteWithReassign('${catId}')">🗑️ Reassign & Delete</button>
       </div>
     `;
-    createModal(content);
+    const overlay = createModal(content);
+    overlay.classList.add('location-reassign-overlay');
   }
 };
 
@@ -1167,7 +1178,7 @@ async function deleteCategory(catId) {
   const saved = await saveSharedRealm();
   if (saved) {
     showToast('🗑️', 'Location Deleted', 'Location removed.');
-    window.openCategoryManager();
+    refreshCategoryManager();
     window.renderAll(); // Immediate UI update
   } else {
     showToast('⚠️', 'Delete Failed', 'Could not save changes.');
