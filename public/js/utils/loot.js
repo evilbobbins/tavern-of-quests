@@ -78,9 +78,10 @@ export function rarityDetails(rarity) {
 
 export function showLootReveal(loot) {
   const rarity = rarityDetails(loot.rarity);
+  const details = getLootDetails(loot.name);
   const overlay = document.createElement('div');
   overlay.className = `loot-reveal-overlay rarity-${loot.rarity}`;
-  overlay.innerHTML = `<section class="loot-reveal" role="status" aria-live="polite"><span class="loot-reveal-kicker">${rarity.icon} ${rarity.label} loot found ${rarity.icon}</span><span class="loot-reveal-icon">${loot.emoji}</span><strong>${loot.name}</strong><small>Found in ${loot.locationEmoji} ${loot.locationName}</small></section>`;
+  overlay.innerHTML = `<section class="loot-reveal" role="status" aria-live="polite"><span class="loot-reveal-kicker">${rarity.icon} ${rarity.label} loot found ${rarity.icon}</span><img class="loot-reveal-art" src="${details.image}" alt="${loot.name}"><strong>${loot.emoji} ${loot.name}</strong><small>Found in ${loot.locationEmoji} ${loot.locationName}</small></section>`;
   overlay.addEventListener('click', () => overlay.remove());
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 4200);
