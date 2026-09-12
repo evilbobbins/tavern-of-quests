@@ -42,6 +42,17 @@ export function openAdminPanel(state) {
         </button>
       </div>
     </div>
+    <div class="admin-section">
+      <div class="admin-section-title">🎒 Realm Relic Ledger</div>
+      <div class="admin-grid">
+        <button class="admin-btn" onclick="window.openLootLedger()" style="grid-column:1/-1;">
+          <span class="admin-icon">🎒</span>
+          <span>View Loot Table</span>
+          <span class="admin-label">Inspect every relic, artwork, and tale</span>
+        </button>
+      </div>
+    </div>
+
     
     <div class="admin-section">
       <div class="admin-section-title">📋 Shared Quest Templates <span style="font-size:0.8rem; opacity:0.7;">(${templateCount})</span></div>

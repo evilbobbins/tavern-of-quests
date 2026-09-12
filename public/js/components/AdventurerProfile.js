@@ -13,7 +13,7 @@ function openPortraitViewer(character) {
   `);
   overlay.querySelector('.modal')?.classList.add('portrait-viewer-modal');
 }
-function openLootViewer(item) {
+export function openLootViewer(item) {
   const details = getLootDetails(item.name);
   const overlay = createModal(`
     <div class="loot-viewer" role="dialog" aria-modal="true" aria-label="${escapeHtml(item.name)} lore">

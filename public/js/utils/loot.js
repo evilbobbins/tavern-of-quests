@@ -24,8 +24,10 @@ const LOCATION_LOOT = {
   'bog-of-eternal-stench': [
     { name: 'Bog Charm', emoji: '🧿' }, { name: 'Strange Herb', emoji: '🌿' }, { name: 'Mirestone', emoji: '🪨' }
   ],
-  default: [
-    { name: 'Tavern Token', emoji: '🪙' }, { name: 'Questing Charm', emoji: '🧭' }, { name: 'Traveller’s Trinket', emoji: '📿' }
+  realm: [
+    { name: 'Tavern Token', emoji: '🪙' }, { name: 'Questing Charm', emoji: '🧭' }, { name: 'Traveller’s Trinket', emoji: '📿' },
+    { name: 'Wayfarer’s Lantern', emoji: '🏮' }, { name: 'Fatebound Die', emoji: '🎲' }, { name: 'Phoenix Feather', emoji: '🪶' },
+    { name: 'Whispering Locket', emoji: '📿' }, { name: 'Runed Hearthstone', emoji: '🪨' }, { name: 'Starlit Chalice', emoji: '🏆' }
   ]
 };
 
@@ -52,7 +54,9 @@ export function awardLootForQuest(quest, customCategories = [], ownedLoot = []) 
   if (Math.random() >= (DROP_CHANCE[priority] || DROP_CHANCE.medium)) return null;
   const location = getCategoryById(quest.category, customCategories);
   const ownedNames = new Set(ownedLoot.map(item => item?.name).filter(Boolean));
-  const pool = (LOCATION_LOOT[quest.category] || LOCATION_LOOT.default).filter(item => !ownedNames.has(item.name));
+  const themedLoot = LOCATION_LOOT[quest.category] || [];
+  const pool = [...themedLoot, ...LOCATION_LOOT.realm]
+    .filter(item => !ownedNames.has(item.name));
   if (!pool.length) return null;
   const item = pool[Math.floor(Math.random() * pool.length)];
   const rarity = weightedRarity(priority);

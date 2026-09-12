@@ -17,6 +17,7 @@ import { openAdventurerProfile } from './components/AdventurerProfile.js';
 import { openActivityLog } from './components/ActivityLog.js';
 import { openTavernBlocks } from './components/TavernBlocks.js';
 import { awardLootForQuest, showLootReveal } from './utils/loot.js';
+import { openLootLedger } from './components/LootLedger.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -72,6 +73,7 @@ window.openBackupManager = openBackupManager;
 window.openRealmMap = () => openRealmMap(window.state);
 window.openAdventurerProfile = () => openAdventurerProfile(window.state, window.currentAdventurer || { name: 'Adventurer', avatar: '⚔️' });
 window.openActivityLog = () => openActivityLog(window.state.activity || []);
+window.openLootLedger = openLootLedger;
 window.openTavernBlocks = () => openTavernBlocks({
   scores: window.state.runefallScores || [],
   onScore: async ({ score, lines, level }) => {

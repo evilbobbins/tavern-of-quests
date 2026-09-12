@@ -37,6 +37,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Loot quality scales with quest difficulty across four tiers: **Common**, **Uncommon**, **Rare**, and **Legendary**.
 - Every location has its own themed treasures—from Royal Seals in the Castle to Dragon Scales in the Dragon’s Den and Bog Charms in the Bog of Eternal Stench.
 - Each Adventurer owns a private Satchel; a treasure found by one party member never appears in another member’s collection.
+- Nine wandering relics—including the Tavern Token, Wayfarer’s Lantern, Fatebound Die, Phoenix Feather, Whispering Locket, Runed Hearthstone, and Starlit Chalice—may be discovered anywhere in the realm.
 - An Adventurer cannot hold duplicate named treasures. Empty their Satchel from the Chronicle to begin collecting that adventurer’s relics anew.
 - Every one of the eighteen relics has a hand-painted inventory portrait and an in-world lore entry. Select an item in the Satchel to inspect its full artwork, rarity, source, and story.
 - Loot discoveries are saved with the adventurer and travel safely through individual exports, full-realm backups, and imports.
