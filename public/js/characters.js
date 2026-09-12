@@ -7,6 +7,12 @@ export const GUILD_CHARACTERS = [
   { id: 'doran', name: 'Doran Ironvein', role: 'The Forgewise Artificer', story: 'A practical dwarf inventor who believes every broken thing deserves one more clever try.', portrait: '/images/characters/doran.png' },
   { id: 'aldric', name: 'Aldric Emberquill', role: 'The Emberwise Wizard', story: 'A patient scholar whose bright magic and sharper wit can illuminate even the most stubborn mystery.', portrait: '/images/characters/aldric.png' },
   { id: 'nessa', name: 'Nessa Nightvale', role: 'The Lantern Rogue', story: 'A quick-footed half-elf with a talent for finding hidden doors, overlooked details, and the safest way through trouble.', portrait: '/images/characters/nessa.png' },
+  { id: 'kaela', name: 'Kaela Stoneheart', role: 'The Mountain Barbarian', story: 'A fearless protector whose laughter is as mighty as her axe.', portrait: '/images/characters/kaela.png' },
+  { id: 'merrin', name: 'Merrin Goldstrings', role: 'The Golden Bard', story: 'A silver-tongued storyteller who can turn any gathering into a legend.', portrait: '/images/characters/merrin.png' },
+  { id: 'thalia', name: 'Thalia Fernwatch', role: 'The Wildwood Ranger', story: 'A patient trailfinder who listens to the forest before choosing her path.', portrait: '/images/characters/thalia.png' },
+  { id: 'sori', name: 'Sori Windstep', role: 'The Stillwater Monk', story: 'A calm traveller whose steady hands and clear mind overcome every storm.', portrait: '/images/characters/sori.png' },
+  { id: 'rowan', name: 'Rowan Vale', role: 'The Steelbound Fighter', story: 'A dependable blade-for-hire who stands between her party and every danger.', portrait: '/images/characters/rowan.png' },
+  { id: 'elowen', name: 'Sister Elowen Brightmere', role: 'The Dawn Cleric', story: 'A compassionate healer who brings courage and light to weary companions.', portrait: '/images/characters/elowen.png' },
 ];
 
 export function getGuildCharacter(id) { return GUILD_CHARACTERS.find(character => character.id === id) || null; }

@@ -11,6 +11,7 @@ const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 const BACKUP_INTERVAL_HOURS = Math.max(1, Number.parseInt(process.env.BACKUP_INTERVAL_HOURS || '24', 10) || 24);
 const BACKUP_RETENTION = Math.max(1, Number.parseInt(process.env.BACKUP_RETENTION || '14', 10) || 14);
 const REALM_KEY = '_realm';
+const GUILD_HERO_IDS = new Set(['cedric', 'lyra', 'bramble', 'doran', 'aldric', 'nessa', 'kaela', 'merrin', 'thalia', 'sori', 'rowan', 'elowen']);
 let writeQueue = Promise.resolve();
 
 app.use(express.json({ limit: '1mb' }));
@@ -28,7 +29,7 @@ async function loadUsers() {
     throw new Error('Unable to read tavern data');
   }
 }
-function defaultRealm() { return { templates: [], customCategories: [], runefallScores: [], revision: 0 }; }
+function defaultRealm() { return { templates: [], customCategories: [], runefallScores: [], allowDuplicateGuildHeroes: false, revision: 0 }; }
 function realUserEntries(users) { return Object.entries(users).filter(([id]) => id !== REALM_KEY); }
 function realmData(users) {
   if (users[REALM_KEY] && typeof users[REALM_KEY] === 'object' && !Array.isArray(users[REALM_KEY])) {
@@ -36,6 +37,7 @@ function realmData(users) {
       templates: Array.isArray(users[REALM_KEY].templates) ? users[REALM_KEY].templates : [],
       customCategories: Array.isArray(users[REALM_KEY].customCategories) ? users[REALM_KEY].customCategories : [],
       runefallScores: normalizeRunefallScores(users[REALM_KEY].runefallScores),
+      allowDuplicateGuildHeroes: users[REALM_KEY].allowDuplicateGuildHeroes === true,
       revision: Number.isInteger(users[REALM_KEY].revision) ? users[REALM_KEY].revision : 0
     };
   }
@@ -45,7 +47,7 @@ function realmData(users) {
     for (const template of user?.state?.templates || []) if (template?.id) templates.set(template.id, template);
     for (const category of user?.state?.customCategories || []) if (category?.id) customCategories.set(category.id, category);
   }
-  return { templates: [...templates.values()], customCategories: [...customCategories.values()], runefallScores: [], revision: 0 };
+  return { templates: [...templates.values()], customCategories: [...customCategories.values()], runefallScores: [], allowDuplicateGuildHeroes: false, revision: 0 };
 }
 function ensureRealm(users) {
   const realm = realmData(users);
@@ -112,7 +114,21 @@ function validRealm(realm) {
   return realm && typeof realm === 'object' && !Array.isArray(realm)
     && Array.isArray(realm.templates) && realm.templates.length <= 250
     && Array.isArray(realm.customCategories) && realm.customCategories.length <= 100
-    && (realm.runefallScores === undefined || (Array.isArray(realm.runefallScores) && realm.runefallScores.length <= 100 && realm.runefallScores.every(validRunefallScore)));
+    && (realm.runefallScores === undefined || (Array.isArray(realm.runefallScores) && realm.runefallScores.length <= 100 && realm.runefallScores.every(validRunefallScore)))
+    && (realm.allowDuplicateGuildHeroes === undefined || typeof realm.allowDuplicateGuildHeroes === 'boolean');
+}
+function duplicateGuildHeroes(users) {
+  const claimed = new Map();
+  for (const [id, user] of realUserEntries(users)) {
+    if (!GUILD_HERO_IDS.has(user?.avatar)) continue;
+    const entries = claimed.get(user.avatar) || [];
+    entries.push({ id, name: user.name, playerTag: user.playerTag || '' });
+    claimed.set(user.avatar, entries);
+  }
+  return [...claimed.entries()].filter(([, entries]) => entries.length > 1);
+}
+function guildHeroAlreadyClaimed(users, avatar, exceptId) {
+  return realUserEntries(users).some(([id, user]) => id !== exceptId && user?.avatar === avatar);
 }
 function validRunefallScore(entry) {
   return entry && typeof entry === 'object' && validText(entry.id, 80) && validText(entry.userId, 80)
@@ -218,12 +234,18 @@ app.post('/api/users', async (req, res, next) => {
     return res.status(400).json({ success: false, error: 'A character name (up to 50 characters) and a valid avatar are required.' });
   }
   try {
-    const user = await withUserMutation(async users => {
+    const result = await withUserMutation(async users => {
+      const realm = ensureRealm(users);
+      if (!realm.allowDuplicateGuildHeroes && GUILD_HERO_IDS.has(avatar) && guildHeroAlreadyClaimed(users, avatar)) {
+        return { status: 409, body: { success: false, error: 'That guild hero is already active in this realm. Ask the Tavern Keeper to allow duplicate guild heroes, or choose another hero.' } };
+      }
       const id = `user_${Date.now().toString(36)}${crypto.randomBytes(3).toString('hex')}`;
       users[id] = { name: name.trim(), avatar: avatar || '🧑', playerTag: playerTag?.trim() || '', revision: 0, state: defaultState() };
-      await saveUsers(users); return { id, name: users[id].name, avatar: users[id].avatar, playerTag: users[id].playerTag };
+      await saveUsers(users);
+      const user = { id, name: users[id].name, avatar: users[id].avatar, playerTag: users[id].playerTag };
+      return { status: 201, body: { success: true, user } };
     });
-    res.json({ success: true, user });
+    res.status(result.status).json(result.body);
   } catch (err) { next(err); }
 });
 app.get('/api/state', async (req, res, next) => {
@@ -233,13 +255,13 @@ app.get('/api/state', async (req, res, next) => {
     const user = users[req.query.userId];
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
     const realm = realmData(users);
-    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, runefallScores: realm.runefallScores, _revision: user.revision || 0, _realmRevision: realm.revision } });
+    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, runefallScores: realm.runefallScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, _revision: user.revision || 0, _realmRevision: realm.revision } });
   } catch (err) { next(err); }
 });
 app.put('/api/state', async (req, res, next) => {
   const userId = req.query.userId;
   if (!userId) return res.status(400).json({ success: false, error: 'User ID required' });
-  const { _revision, _realmRevision, ...state } = req.body || {};
+  const { _revision, _realmRevision, allowDuplicateGuildHeroes, ...state } = req.body || {};
   const validationError = validState(state);
   if (validationError) return res.status(400).json({ success: false, error: validationError });
   if (!Number.isInteger(_revision) || _revision < 0) return res.status(400).json({ success: false, error: 'A state revision is required.' });
@@ -265,7 +287,27 @@ app.put('/api/realm', async (req, res, next) => {
     const result = await withUserMutation(async users => {
       const realm = ensureRealm(users);
       if (_realmRevision !== realm.revision) return { status: 409, body: { success: false, conflict: true, error: 'The shared realm changed. Reload the latest locations and templates.' } };
-      users[REALM_KEY] = { templates, customCategories, runefallScores: realm.runefallScores, revision: realm.revision + 1 };
+      users[REALM_KEY] = { templates, customCategories, runefallScores: realm.runefallScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, revision: realm.revision + 1 };
+      await saveUsers(users);
+      return { status: 200, body: { success: true, realm: users[REALM_KEY] } };
+    });
+    res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
+app.put('/api/realm/guild-hero-policy', async (req, res, next) => {
+  const { allowDuplicateGuildHeroes } = req.body || {};
+  if (typeof allowDuplicateGuildHeroes !== 'boolean') return res.status(400).json({ success: false, error: 'A duplicate-hero setting is required.' });
+  try {
+    const result = await withUserMutation(async users => {
+      const realm = ensureRealm(users);
+      if (!allowDuplicateGuildHeroes) {
+        const duplicates = duplicateGuildHeroes(users);
+        if (duplicates.length) {
+          const names = duplicates.map(([heroId, entries]) => `${heroId}: ${entries.map(entry => entry.playerTag || entry.name).join(', ')}`).join('; ');
+          return { status: 409, body: { success: false, error: `Duplicate guild heroes must be resolved before this rule can be enabled: ${names}.` } };
+        }
+      }
+      users[REALM_KEY] = { ...realm, allowDuplicateGuildHeroes, revision: realm.revision + 1 };
       await saveUsers(users);
       return { status: 200, body: { success: true, realm: users[REALM_KEY] } };
     });
@@ -306,14 +348,17 @@ app.put('/api/users/:userId', async (req, res, next) => {
   if ((name !== undefined && !validText(name, 50)) || (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 16)) || (playerTag !== undefined && !validText(playerTag, 50))) return res.status(400).json({ success: false, error: 'Invalid character details.' });
   try {
     const result = await withUserMutation(async users => {
-      if (!users[req.params.userId]) return false;
+      if (!users[req.params.userId]) return { status: 404, body: { success: false, error: 'User not found' } };
+      const realm = ensureRealm(users);
+      if (avatar !== undefined && !realm.allowDuplicateGuildHeroes && GUILD_HERO_IDS.has(avatar) && guildHeroAlreadyClaimed(users, avatar, req.params.userId)) {
+        return { status: 409, body: { success: false, error: 'That guild hero is already active in this realm. Ask the Tavern Keeper to allow duplicate guild heroes, or choose another hero.' } };
+      }
       if (name !== undefined) users[req.params.userId].name = name.trim();
       if (avatar !== undefined) users[req.params.userId].avatar = avatar;
       if (playerTag !== undefined) users[req.params.userId].playerTag = playerTag.trim();
-      await saveUsers(users); return true;
+      await saveUsers(users); return { status: 200, body: { success: true } };
     });
-    if (!result) return res.status(404).json({ success: false, error: 'User not found' });
-    res.json({ success: true });
+    res.status(result.status).json(result.body);
   } catch (err) { next(err); }
 });
 app.delete('/api/users/:userId', async (req, res, next) => {

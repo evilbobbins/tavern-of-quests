@@ -18,6 +18,7 @@ export function openCreateCharModal() {
     <div class="form-group" style="margin-top:16px;"><label for="new-player-tag">Your Player Tag</label><input type="text" id="new-player-tag" placeholder="e.g., Bob, Mum, Player One" maxlength="30" autofocus></div>
     <div class="modal-actions"><button class="btn-modal btn-cancel" onclick="window.closeModal()">Cancel</button><button class="btn-modal btn-save" id="btn-create-guild-character">⚔️ Begin Adventure</button></div>
   `);
+  overlay.querySelector('.modal')?.classList.add('guild-selection-modal');
   overlay.querySelector('#guild-character-grid').addEventListener('click', event => {
     const choice = event.target.closest('[data-character]');
     if (!choice) return;

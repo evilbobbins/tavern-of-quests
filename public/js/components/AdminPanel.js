@@ -1,4 +1,6 @@
 import { createModal } from './Modal.js';
+import { setGuildHeroDuplicatePolicy } from '../services/api.js';
+import { showToast } from '../utils/helpers.js';
 
 export function openAdminPanel(state) {
   const templateCount = (state.templates || []).length;
@@ -19,6 +21,15 @@ export function openAdminPanel(state) {
           <span class="admin-label">Switch or welcome a guild member</span>
         </button>
       </div>
+    </div>
+
+
+    <div class="admin-section">
+      <div class="admin-section-title">🎭 Guild Hero Rule</div>
+      <label class="guild-policy-toggle">
+        <input id="allow-duplicate-guild-heroes" type="checkbox" ${state.allowDuplicateGuildHeroes ? 'checked' : ''}>
+        <span><strong>Allow duplicate guild heroes</strong><small>Off by default: each hero may belong to only one adventurer.</small></span>
+      </label>
     </div>
 
     <div class="admin-section">
@@ -106,4 +117,19 @@ export function openAdminPanel(state) {
   
   const overlay = createModal(content);
   overlay.querySelector('.modal')?.classList.add('admin-modal');
+  const duplicateToggle = overlay.querySelector('#allow-duplicate-guild-heroes');
+  duplicateToggle?.addEventListener('change', async () => {
+    const desiredValue = duplicateToggle.checked;
+    duplicateToggle.disabled = true;
+    const result = await setGuildHeroDuplicatePolicy(desiredValue);
+    duplicateToggle.disabled = false;
+    if (!result.success || !result.realm) {
+      duplicateToggle.checked = !desiredValue;
+      showToast('⚠️', 'Guild Rule Unchanged', result.error || 'The guild hero rule could not be updated.');
+      return;
+    }
+    state.allowDuplicateGuildHeroes = result.realm.allowDuplicateGuildHeroes === true;
+    state._realmRevision = result.realm.revision || state._realmRevision;
+    showToast('🎭', desiredValue ? 'Duplicates Allowed' : 'One Hero Each', desiredValue ? 'Guild heroes may now be shared.' : 'Each guild hero now belongs to one adventurer.');
+  });
 }

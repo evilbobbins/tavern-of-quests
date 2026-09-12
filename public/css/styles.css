@@ -233,6 +233,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .modal { background: linear-gradient(135deg, #3a2415, #2c1810); border: 3px solid var(--gold); border-radius: 16px; padding: 0; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 0 40px rgba(212,168,67,0.4); animation: modal-appear 0.4s ease-out; }
 .modal.admin-modal { max-width: 920px; }
 .modal.adventurer-profile-modal { max-width: 860px; }
+.modal.guild-selection-modal { max-width:1180px; }
 .modal.template-picker-modal { max-width: 860px; }
 .modal.template-manager-modal { max-width: 920px; }
 .modal-inner { position: relative; padding: 28px; }
@@ -265,6 +266,10 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .admin-danger-zone { border: 1px solid rgba(231,76,60,0.4); background: rgba(231,76,60,0.05); border-radius: 8px; padding: 16px; }
 .admin-danger-zone .admin-section-title { color: #e74c3c; }
 .admin-danger-btn { width: 100%; padding: 14px; background: rgba(139,26,26,0.2); border: 1px solid var(--blood-red); border-radius: 8px; color: #e74c3c; font-family: 'Cinzel', serif; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; }
+.guild-policy-toggle { align-items:center; background:rgba(26,15,10,.5); border:1px solid rgba(212,168,67,.28); border-radius:8px; cursor:pointer; display:flex; gap:12px; padding:13px; }
+.guild-policy-toggle input { accent-color:var(--gold); height:18px; width:18px; }
+.guild-policy-toggle strong,.guild-policy-toggle small { display:block; }.guild-policy-toggle strong { color:var(--parchment); font:.84rem 'Cinzel',serif; }.guild-policy-toggle small { color:var(--parchment-dark); font-size:.75rem; line-height:1.35; margin-top:4px; }
+.guild-policy-toggle:has(input:disabled) { cursor:wait; opacity:.65; }
 .admin-danger-btn:hover { background: rgba(231,76,60,0.3); border-color: #e74c3c; box-shadow: 0 0 15px rgba(231,76,60,0.3); }
 
 .category-list { display: flex; flex-direction: column; gap: 8px; }
@@ -827,10 +832,11 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 
 /* Guild character roster */
 .guild-intro { color:var(--parchment-dark); font-style:italic; line-height:1.4; margin:-4px 0 14px; }
-.guild-character-grid { display:grid; gap:10px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (max-width:1180px) { .modal.guild-selection-modal { max-width:94vw; } }
+.guild-character-grid { display:grid; gap:10px; grid-template-columns:repeat(4,minmax(0,1fr)); }
 .guild-character-choice { align-items:center; background:rgba(26,15,10,.55); border:1px solid rgba(212,168,67,.35); border-radius:9px; color:var(--parchment); cursor:pointer; display:flex; gap:10px; padding:9px; text-align:left; transition:.2s; }.guild-character-choice:hover,.guild-character-choice.selected { background:rgba(212,168,67,.15); border-color:var(--gold); box-shadow:0 0 14px rgba(212,168,67,.2); }
 .guild-character-choice img { border:1px solid var(--gold-dark); border-radius:50%; height:58px; object-fit:cover; width:58px; }.guild-character-choice span { min-width:0; }.guild-character-choice strong,.guild-character-choice small,.guild-character-choice em { display:block; }.guild-character-choice strong { color:var(--gold-light); font:700 .76rem 'Cinzel',serif; }.guild-character-choice small { color:#bda2db; font:.62rem 'Cinzel',serif; margin-top:3px; }.guild-character-choice em { color:var(--parchment-dark); font-size:.73rem; line-height:1.2; margin-top:5px; }
 .guild-character-choice.active, .guild-character-choice:disabled { background:rgba(122,111,96,.22); border-color:rgba(189,170,137,.26); color:var(--parchment-dark); cursor:default; filter:grayscale(.7); opacity:.62; }
 .guild-character-choice.active em { color:var(--parchment-dark); font-style:normal; }
 .character-avatar-image { border:1px solid var(--gold-dark); border-radius:50%; height:100%; object-fit:cover; width:100%; }.character-avatar-emoji { font-size:inherit; }
-@media (max-width:520px) { .guild-character-grid { grid-template-columns:1fr; } }
+@media (max-width:860px) { .guild-character-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } } @media (max-width:520px) { .guild-character-grid { grid-template-columns:1fr; } }

@@ -40,6 +40,7 @@ window.openEditCharModal = async (userId) => {
   `;
 
   const overlay = createModal(content);
+  overlay.querySelector('.modal')?.classList.add('guild-selection-modal');
   overlay.querySelector('#edit-guild-character-grid').addEventListener('click', event => {
     const choice = event.target.closest('[data-character]');
     if (!choice) return;

@@ -33,7 +33,8 @@ window.state = {
   filters: { main: 'all', side: 'all' },
   customCategories: [],
   runefallScores: [],
-  _realmRevision: 0
+  _realmRevision: 0,
+  allowDuplicateGuildHeroes: false,
 };
 
 window.currentUserId = localStorage.getItem('tavern_current_user') || null;

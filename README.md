@@ -12,9 +12,12 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 
 ### 🧙🧝 Adventurers and progress
 
-- Choose from six illustrated guild heroes: **Sir Cedric Ashford** the knight, **Lyra Moonwhisper** the spellweaver, **Bramble Thistlebuckle** the scout, **Doran Ironvein** the artificer, **Aldric Emberquill** the wizard, and **Nessa Nightvale** the rogue.
+- Choose from twelve illustrated guild heroes spanning knight, spellweaver, scout, artificer, wizard, rogue, barbarian, bard, ranger, monk, fighter, and cleric.
+- The guild’s newest heroes are **Kaela Stoneheart**, **Merrin Goldstrings**, **Thalia Fernwatch**, **Sori Windstep**, **Rowan Vale**, and **Sister Elowen Brightmere**—each with a portrait, role, and Guild Tale.
+- By default, a guild hero can belong to only one adventurer. Tavern Keepers can temporarily allow duplicates, but cannot restore the one-hero rule until any duplicates are resolved.
 - Give each hero a separate **Player Tag**, so a party can tell who is playing whom.
 - Update a guild identity at any time from **Active Guild Members**; legacy emoji adventurers can be welcomed into the illustrated guild.
+- Join the Guild and Edit Adventurer screens share a spacious four-column desktop roster, with responsive two- and one-column layouts for smaller displays.
 - Keep each adventurer’s quests, completed history, XP, level, and streak private to them.
 - Open an adventurer’s chronicle directly from the top bar to review achievements, rank, portrait, and Guild Tale.
 - Click a Chronicle portrait to admire the hero’s full artwork, or edit the adventurer directly from the Chronicle.
@@ -157,7 +160,7 @@ tavern-of-quests/
 │   ├── css/styles.css                # Fantasy theme and responsive styles
 │   ├── images/
 │   │   ├── faded-realm-map.png        # Realm Map artwork
-│   │   └── characters/                # Six illustrated guild hero portraits
+│   │   └── characters/                # Twelve illustrated guild hero portraits
 │   └── js/
 │       ├── app.js                    # Application controller
 │       ├── config.js                 # Quest and location defaults

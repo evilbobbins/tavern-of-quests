@@ -40,9 +40,18 @@ export async function saveRealm(realm) {
 
 export async function recordRunefallScore(userId, score, lines, level) {
   return await apiFetch('/api/runefall-scores', {
+
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId, score, lines, level })
+  });
+}
+
+export async function setGuildHeroDuplicatePolicy(allowDuplicateGuildHeroes) {
+  return await apiFetch('/api/realm/guild-hero-policy', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ allowDuplicateGuildHeroes })
   });
 }
 
