@@ -12,10 +12,12 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 
 ### 🧙🧝 Adventurers and progress
 
-- Create, rename, edit, and retire adventurers with custom emoji avatars.
+- Choose from six illustrated guild heroes: **Sir Cedric Ashford** the knight, **Lyra Moonwhisper** the spellweaver, **Bramble Thistlebuckle** the scout, **Doran Ironvein** the artificer, **Aldric Emberquill** the wizard, and **Nessa Nightvale** the rogue.
+- Give each hero a separate **Player Tag**, so a party can tell who is playing whom.
+- Update a guild identity at any time from **Active Guild Members**; legacy emoji adventurers can be welcomed into the illustrated guild.
 - Keep each adventurer’s quests, completed history, XP, level, and streak private to them.
-- Open an adventurer’s chronicle directly from the top bar to review achievements and progress.
-- Browse the roster when it is time to change adventurers.
+- Open an adventurer’s chronicle directly from the top bar to review achievements, rank, portrait, and Guild Tale.
+- Click a Chronicle portrait to admire the hero’s full artwork, or edit the adventurer directly from the Chronicle.
 
 ### 📋 Quest board
 
@@ -39,6 +41,8 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Create a manual backup before a big change.
 - Browse backups in the Tavern Keeper and restore a selected snapshot.
 - Restoring creates a safety backup of the current realm first, so the previous state is not lost.
+- Export or import a complete realm snapshot for an offline copy or a move between Taverns.
+- Clearly separated current-adventurer import and export tools keep individual progress backups distinct from the whole realm.
 
 ### 🎲 Tavern Games: Runefall Revel
 
@@ -53,7 +57,8 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 ### 👑 Tavern Keeper tools
 
 - Manage shared quest templates.
-- Open the activity chronicle, backup vault, and character tools.
+- Open the activity chronicle and the Backup Vault.
+- Use **Active Guild Members** to switch adventurers, welcome a new guild member, or update a hero’s player tag and identity.
 - Reset the shared Runefall score ledger through a confirmation-gated scoreboard control.
 - Refresh the current realm from the server and inspect connection status.
 - Reset a character’s streak or progress when appropriate, with guarded destructive actions.
@@ -65,6 +70,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - **Frontend:** Vanilla HTML, CSS, and modern JavaScript modules—no framework required.
 - **Theme:** Dark wood, parchment, glowing gold accents, and fantasy typography (Cinzel, MedievalSharp, and IM Fell English).
 - **Backend:** Node.js with Express and a small REST API for adventurers, their state, the shared realm, health checks, and backups.
+- **Guild roster:** Illustrated character assets and a small shared roster module keep character identity, role, tale, and portrait consistent across the Tavern.
 - **Persistence:** Atomic JSON writes under `/app/data`, stored in a Docker named volume.
 - **Conflict protection:** Revision checks avoid silently overwriting another adventurer’s shared locations or templates.
 - **Health check:** `GET /api/health` confirms that the Tavern server and persistent storage are ready.
@@ -149,10 +155,13 @@ tavern-of-quests/
 ├── public/
 │   ├── index.html                    # Tavern interface
 │   ├── css/styles.css                # Fantasy theme and responsive styles
-│   ├── images/faded-realm-map.png    # Realm Map artwork
+│   ├── images/
+│   │   ├── faded-realm-map.png        # Realm Map artwork
+│   │   └── characters/                # Six illustrated guild hero portraits
 │   └── js/
 │       ├── app.js                    # Application controller
 │       ├── config.js                 # Quest and location defaults
+│       ├── characters.js              # Guild identities, tales, and portraits
 │       ├── services/api.js           # REST API client
 │       └── components/
 │           ├── AdminPanel.js         # Tavern Keeper menu
@@ -162,6 +171,9 @@ tavern-of-quests/
 │           ├── AdventurerProfile.js  # Adventurer achievements
 │           ├── ActivityLog.js        # Recent realm activity
 │           ├── TemplateManager.js    # Shared quest templates
+│           ├── CharacterSelect.js     # Active Guild Members screen
+│           ├── CreateCharacter.js     # Join the Guild flow
+│           ├── EditCharacter.js       # Player tag and guild identity editor
 │           └── TavernBlocks.js       # Runefall Revel mini-game
 └── data/                             # Created inside the persistent Docker volume
 ```

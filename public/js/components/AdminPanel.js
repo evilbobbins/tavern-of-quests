@@ -11,12 +11,12 @@ export function openAdminPanel(state) {
 
     <div class="admin-grimoire-grid">
     <div class="admin-section">
-      <div class="admin-section-title">👥 Manage Adventurers</div>
+      <div class="admin-section-title">🛡️ Active Guild Members</div>
       <div class="admin-grid">
-        <button class="admin-btn" onclick="window.showCharacterSelect(); window.closeModal();">
+        <button class="admin-btn" onclick="window.showCharacterSelect(); window.closeModal();" style="grid-column:1/-1;">
           <span class="admin-icon">🛡️</span>
-          <span>View Roster</span>
-          <span class="admin-label">Switch or create characters</span>
+          <span>Active Guild Members</span>
+          <span class="admin-label">Switch or welcome a guild member</span>
         </button>
       </div>
     </div>
