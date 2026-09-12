@@ -1,6 +1,7 @@
 import { createModal } from './Modal.js';
 import { escapeHtml } from '../utils/helpers.js';
 import { adventurerLabel, avatarMarkup, getGuildCharacter } from '../characters.js';
+import { getLootDetails } from '../utils/lootCatalog.js';
 
 function openPortraitViewer(character) {
   const overlay = createModal(`
@@ -12,10 +13,23 @@ function openPortraitViewer(character) {
   `);
   overlay.querySelector('.modal')?.classList.add('portrait-viewer-modal');
 }
+function openLootViewer(item) {
+  const details = getLootDetails(item.name);
+  const overlay = createModal(`
+    <div class="loot-viewer" role="dialog" aria-modal="true" aria-label="${escapeHtml(item.name)} lore">
+      <div class="modal-header"><h3 class="modal-title">${escapeHtml(item.emoji)} ${escapeHtml(item.name)}</h3><button class="modal-close" type="button" onclick="window.closeTopModal()" aria-label="Close loot lore">&times;</button></div>
+      <img class="loot-viewer-art" src="${details.image}" alt="Artwork of ${escapeHtml(item.name)}">
+      <span class="loot-viewer-source">${escapeHtml(item.rarity)} relic · Found in ${escapeHtml(item.locationEmoji)} ${escapeHtml(item.locationName)}</span>
+      <p>${escapeHtml(details.lore)}</p>
+    </div>
+  `);
+  overlay.querySelector('.modal')?.classList.add('loot-viewer-modal');
+}
 
 export function openAdventurerProfile(state, adventurer) {
   const completed = (state.completed || []).length + (state.archived || []).length;
   const active = (state.quests || []).length;
+  const loot = [...(state.loot || [])].sort((a, b) => new Date(b.foundAt) - new Date(a.foundAt));
   const level = Math.max(1, Number(state.level) || 1);
   const rankAchievements = [
     { icon: '🪶', name: 'F-Rank Adventurer', level: 2 },
@@ -54,6 +68,13 @@ export function openAdventurerProfile(state, adventurer) {
   `;
   const rankHtml = rankAchievements.map(renderAchievement).join('');
   const achievementHtml = achievements.map(renderAchievement).join('');
+  const lootHtml = loot.length
+    ? loot.map((item, index) => {
+      const details = getLootDetails(item.name);
+      return `<article class="loot-card rarity-${escapeHtml(item.rarity)}"><button class="loot-art-button" type="button" data-loot-index="${index}" aria-label="View artwork and lore for ${escapeHtml(item.name)}"><img src="${details.image}" alt="${escapeHtml(item.name)}"></button><div><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.rarity)} · ${escapeHtml(item.locationEmoji)} ${escapeHtml(item.locationName)}</span><small>${new Date(item.foundAt).toLocaleDateString()}</small></div></article>`;
+    }).join('')
+    : '<div class="loot-empty">Complete quests to discover treasures from across the realm.</div>';
+  const emptySatchelButton = loot.length ? '<button class="btn-empty-satchel" type="button" onclick="window.emptyAdventurerSatchel()">Empty Satchel</button>' : '';
 
   const overlay = createModal(`
     <div class="adventurer-profile" role="dialog" aria-modal="true" aria-label="Adventurer achievements">
@@ -78,6 +99,8 @@ export function openAdventurerProfile(state, adventurer) {
         <div><strong>${active}</strong><span>Active</span></div>
         <div><strong>${state.streak || 0}</strong><span>Day streak</span></div>
       </div>
+      <div class="adventurer-achievement-heading"><span>🎒 Adventurer’s Satchel</span><div class="satchel-heading-actions"><strong>${loot.length} found</strong>${emptySatchelButton}</div></div>
+      <div class="loot-list">${lootHtml}</div>
       <div class="adventurer-achievement-heading"><span>Guild Ranks</span><strong>${rankAchievements.filter(rank => rank.unlocked).length} / ${rankAchievements.length}</strong></div>
       <div class="achievement-list rank-achievement-list">${rankHtml}</div>
       <div class="adventurer-achievement-heading"><span>Achievements</span><strong>${earned} / ${rankAchievements.length + achievements.length}</strong></div>
@@ -87,6 +110,10 @@ export function openAdventurerProfile(state, adventurer) {
   `);
   overlay.querySelector('.modal')?.classList.add('adventurer-profile-modal');
   overlay.querySelector('#view-adventurer-art')?.addEventListener('click', () => openPortraitViewer(character));
+  overlay.querySelectorAll('[data-loot-index]').forEach(button => button.addEventListener('click', () => {
+    const item = loot[Number(button.dataset.lootIndex)];
+    if (item) openLootViewer(item);
+  }));
   overlay.querySelector('#edit-adventurer')?.addEventListener('click', () => {
     overlay.remove();
     window.openEditCharModal?.(adventurer.id);

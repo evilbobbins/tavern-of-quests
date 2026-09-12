@@ -16,6 +16,7 @@ import { openRealmMap } from './components/RealmMap.js';
 import { openAdventurerProfile } from './components/AdventurerProfile.js';
 import { openActivityLog } from './components/ActivityLog.js';
 import { openTavernBlocks } from './components/TavernBlocks.js';
+import { awardLootForQuest, showLootReveal } from './utils/loot.js';
 import './components/EditCharacter.js';
 import { EMOJI_LIBRARY } from './utils/emojiLibrary.js';
 
@@ -33,6 +34,7 @@ window.state = {
   filters: { main: 'all', side: 'all' },
   customCategories: [],
   runefallScores: [],
+  loot: [],
   _realmRevision: 0,
   allowDuplicateGuildHeroes: false,
 };
@@ -196,12 +198,13 @@ async function loadAppState() {
   const data = await loadState(window.currentUserId);
   
   if (data) {
-    window.state = { ...window.state, ...data };
+    window.state = { ...window.state, ...data, loot: Array.isArray(data.loot) ? data.loot : [] };
     if (!window.state.filters) window.state.filters = { main: 'all', side: 'all' };
     if (!Array.isArray(window.state.customCategories)) window.state.customCategories = [];
     if (!Array.isArray(window.state.archived)) window.state.archived = [];
     if (!Array.isArray(window.state.templates)) window.state.templates = [];
     if (!Array.isArray(window.state.runefallScores)) window.state.runefallScores = [];
+    if (!Array.isArray(window.state.loot)) window.state.loot = [];
     if (!Number.isInteger(window.state._realmRevision)) window.state._realmRevision = 0;
     if (!Array.isArray(window.state.activity)) window.state.activity = [];
     
@@ -505,7 +508,7 @@ window.toggleQuest = async (id) => {
   const idx = window.state.quests.findIndex(q => q.id === id);
   if (idx === -1) return;
   const quest = window.state.quests[idx];
-  const priorStats = { xp: window.state.xp, level: window.state.level, streak: window.state.streak, lastCompletedDate: window.state.lastCompletedDate };
+  const priorStats = { xp: window.state.xp, level: window.state.level, streak: window.state.streak, lastCompletedDate: window.state.lastCompletedDate, loot: [...(window.state.loot || [])] };
   quest.completedAt = new Date().toISOString();
   window.state.completed.push(quest);
   window.state.quests.splice(idx, 1);
@@ -517,6 +520,12 @@ window.toggleQuest = async (id) => {
     const yesterday = new Date(Date.now() - 86400000).toDateString();
     window.state.streak = window.state.lastCompletedDate === yesterday ? window.state.streak + 1 : 1;
     window.state.lastCompletedDate = today;
+  }
+  const loot = awardLootForQuest(quest, window.state.customCategories || [], window.state.loot || []);
+  if (loot) {
+    window.state.loot.push(loot);
+    quest.lootId = loot.id;
+    recordActivity(loot.emoji, `Found ${loot.name} in ${loot.locationName}`);
   }
   recordActivity('✅', `Completed “${quest.name}” (+${quest.xp} XP)`);
   window.renderAll(); // Immediate UI update
@@ -530,12 +539,14 @@ window.toggleQuest = async (id) => {
       window.renderAll();
       if (await saveStateWrapper()) showToast('↩️', 'Completion Undone', `“${quest.name}” is active again.`);
     });
+    if (loot) setTimeout(() => showLootReveal(loot), 450);
     if (window.state.level > oldLevel) setTimeout(() => showLevelUp(window.state.level), 600);
   } else {
     window.state.completed.pop();
     window.state.quests.splice(idx, 0, quest);
     window.state.xp -= quest.xp;
     window.state.level = oldLevel;
+    window.state.loot = priorStats.loot;
     window.renderAll(); // Rollback UI
   }
 };
@@ -984,6 +995,7 @@ window.adminImportData = () => {
         if (!Array.isArray(window.state.customCategories)) window.state.customCategories = [];
         if (!Array.isArray(window.state.archived)) window.state.archived = [];
         if (!Array.isArray(window.state.templates)) window.state.templates = [];
+        if (!Array.isArray(window.state.loot)) window.state.loot = [];
         const saved = await saveStateWrapper();
         if (saved) { window.renderAll(); closeTopModal(); showToast('📥', 'Adventurer Imported', 'Only this adventurer’s data was restored.'); }
         else { window.state = backup; window.renderAll(); showToast('⚠️', 'Import Failed', 'Reverted.'); }
@@ -996,13 +1008,30 @@ window.adminImportData = () => {
   input.click();
 };
 
+window.emptyAdventurerSatchel = async () => {
+  if (!(window.state.loot || []).length) return;
+  if (!confirm('Empty this adventurer’s Satchel? This removes their collected loot and lets them discover each treasure again.')) return;
+  const previousLoot = window.state.loot;
+  window.state.loot = [];
+  recordActivity('🎒', 'Emptied the Adventurer’s Satchel');
+  window.renderAll();
+  if (await saveStateWrapper()) {
+    closeTopModal();
+    showToast('🎒', 'Satchel Emptied', 'This adventurer can discover treasures anew.');
+  } else {
+    window.state.loot = previousLoot;
+    window.renderAll();
+    showToast('⚠️', 'Satchel Unchanged', 'The satchel could not be saved.');
+  }
+};
+
 window.adminWipeAll = async () => {
   const input = prompt('⚠️ DELETE ALL DATA FOR THIS CHARACTER?\n\nType RESET to confirm:');
   if (input && input.trim().toUpperCase() === 'RESET') {
     window.state = {
       quests: [], completed: [], archived: [], templates: [], xp: 0, level: 1, streak: 0, lastCompletedDate: null,
       filters: { main: 'all', side: 'all' },
-      customCategories: window.state.customCategories
+      customCategories: window.state.customCategories, loot: []
     };
     const saved = await saveStateWrapper();
     if (saved) { window.renderAll(); closeTopModal(); showToast('☠️', 'Data Wiped', 'Character reset.'); }

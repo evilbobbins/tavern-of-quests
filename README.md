@@ -31,6 +31,16 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Create reusable quest templates to post recurring adventures quickly.
 - Keep completed quests paginated and archive older victories when the board gets busy.
 
+### 🎒 Loot and relics
+
+- Completing a quest can uncover a random treasure: the chance increases from **25%** for low-priority quests to **85%** for critical quests.
+- Loot quality scales with quest difficulty across four tiers: **Common**, **Uncommon**, **Rare**, and **Legendary**.
+- Every location has its own themed treasures—from Royal Seals in the Castle to Dragon Scales in the Dragon’s Den and Bog Charms in the Bog of Eternal Stench.
+- Each Adventurer owns a private Satchel; a treasure found by one party member never appears in another member’s collection.
+- An Adventurer cannot hold duplicate named treasures. Empty their Satchel from the Chronicle to begin collecting that adventurer’s relics anew.
+- Every one of the eighteen relics has a hand-painted inventory portrait and an in-world lore entry. Select an item in the Satchel to inspect its full artwork, rarity, source, and story.
+- Loot discoveries are saved with the adventurer and travel safely through individual exports, full-realm backups, and imports.
+
 ### 🗺️ One shared realm
 
 - Explore the **Realm Map** to see active quests grouped by location.
@@ -76,6 +86,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - **Guild roster:** Illustrated character assets and a small shared roster module keep character identity, role, tale, and portrait consistent across the Tavern.
 - **Persistence:** Atomic JSON writes under `/app/data`, stored in a Docker named volume.
 - **Conflict protection:** Revision checks avoid silently overwriting another adventurer’s shared locations or templates.
+- **Relic catalog:** Eighteen illustrated loot assets and a shared lore catalog provide location-themed treasures, item inspection, and per-adventurer collecting.
 - **Health check:** `GET /api/health` confirms that the Tavern server and persistent storage are ready.
 
 ---
@@ -160,24 +171,28 @@ tavern-of-quests/
 │   ├── css/styles.css                # Fantasy theme and responsive styles
 │   ├── images/
 │   │   ├── faded-realm-map.png        # Realm Map artwork
-│   │   └── characters/                # Twelve illustrated guild hero portraits
+│   │   ├── characters/                # Twelve illustrated guild hero portraits
+│   │   └── loot/                      # Eighteen illustrated relic portraits
 │   └── js/
-│       ├── app.js                    # Application controller
-│       ├── config.js                 # Quest and location defaults
+│       ├── app.js                     # Application controller
+│       ├── config.js                  # Quest and location defaults
 │       ├── characters.js              # Guild identities, tales, and portraits
-│       ├── services/api.js           # REST API client
+│       ├── services/api.js            # REST API client
+│       ├── utils/
+│       │   ├── loot.js                # Loot drops, rarity, and reveal logic
+│       │   └── lootCatalog.js         # Relic artwork and lore catalog
 │       └── components/
-│           ├── AdminPanel.js         # Tavern Keeper menu
-│           ├── BackupManager.js      # Backup Vault
-│           ├── RealmMap.js           # Interactive Realm Map
-│           ├── RealmDashboard.js     # Realm Chronicle
-│           ├── AdventurerProfile.js  # Adventurer achievements
-│           ├── ActivityLog.js        # Recent realm activity
-│           ├── TemplateManager.js    # Shared quest templates
+│           ├── AdminPanel.js          # Tavern Keeper menu
+│           ├── BackupManager.js       # Backup Vault
+│           ├── RealmMap.js            # Interactive Realm Map
+│           ├── RealmDashboard.js      # Realm Chronicle
+│           ├── AdventurerProfile.js   # Adventurer achievements and Satchel
+│           ├── ActivityLog.js         # Recent realm activity
+│           ├── TemplateManager.js     # Shared quest templates
 │           ├── CharacterSelect.js     # Active Guild Members screen
 │           ├── CreateCharacter.js     # Join the Guild flow
 │           ├── EditCharacter.js       # Player tag and guild identity editor
-│           └── TavernBlocks.js       # Runefall Revel mini-game
+│           └── TavernBlocks.js        # Runefall Revel mini-game
 └── data/                             # Created inside the persistent Docker volume
 ```
 

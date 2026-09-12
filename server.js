@@ -98,6 +98,13 @@ function validQuest(quest) {
     && (!quest.description || (typeof quest.description === 'string' && quest.description.length <= 200))
     && (quest.dueDate === undefined || quest.dueDate === null || /^\d{4}-\d{2}-\d{2}$/.test(quest.dueDate));
 }
+function validLoot(item) {
+  return item && typeof item === 'object' && validText(item.id, 160) && validText(item.name, 80)
+    && typeof item.emoji === 'string' && item.emoji.length <= 16
+    && ['common', 'uncommon', 'rare', 'legendary'].includes(item.rarity)
+    && validText(item.locationId, 100) && validText(item.locationName, 100) && typeof item.locationEmoji === 'string' && item.locationEmoji.length <= 16
+    && validText(item.questName, 100) && typeof item.foundAt === 'string' && !Number.isNaN(Date.parse(item.foundAt));
+}
 function validState(state) {
   if (!state || typeof state !== 'object' || Array.isArray(state)) return 'State must be an object.';
   for (const key of ['quests', 'completed', 'archived']) {
@@ -106,6 +113,7 @@ function validState(state) {
   if (state.templates !== undefined && (!Array.isArray(state.templates) || state.templates.length > 250)) return 'Invalid templates collection.';
   if (state.customCategories !== undefined && (!Array.isArray(state.customCategories) || state.customCategories.length > 100)) return 'Invalid categories collection.';
   if (state.activity !== undefined && (!Array.isArray(state.activity) || state.activity.length > 100)) return 'Invalid activity collection.';
+  if (state.loot !== undefined && (!Array.isArray(state.loot) || state.loot.length > 2000 || !state.loot.every(validLoot))) return 'Invalid loot collection.';
   if (!Number.isFinite(state.xp) || state.xp < 0 || state.xp > 10000000) return 'Invalid XP value.';
   if (!Number.isFinite(state.level) || state.level < 1 || state.level > 100001) return 'Invalid level value.';
   return null;
@@ -156,7 +164,7 @@ function backupPath(name) {
 }
 function defaultState() {
   return { quests: [], completed: [], archived: [], templates: [], activity: [], xp: 0, level: 1, streak: 0,
-    lastCompletedDate: null, filters: { main: 'all', side: 'all' }, customCategories: [] };
+    lastCompletedDate: null, filters: { main: 'all', side: 'all' }, customCategories: [], loot: [] };
 }
 async function migrateRealmData() {
   await withUserMutation(async users => {

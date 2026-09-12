@@ -16,7 +16,10 @@ export const GUILD_CHARACTERS = [
 ];
 
 export function getGuildCharacter(id) { return GUILD_CHARACTERS.find(character => character.id === id) || null; }
-export function adventurerLabel(user) { return user?.playerTag ? `${user.name} · ${user.playerTag}` : (user?.name || 'Adventurer'); }
+export function adventurerLabel(user) {
+  const characterName = getGuildCharacter(user?.avatar)?.name || user?.name || 'Adventurer';
+  return user?.playerTag ? `${characterName} · ${user.playerTag}` : characterName;
+}
 export function avatarMarkup(avatar, className = 'character-avatar-image') {
   const character = getGuildCharacter(avatar);
   if (character) return `<img class="${className}" src="${character.portrait}" alt="${escapeHtml(character.name)}">`;
