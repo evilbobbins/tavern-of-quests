@@ -6,6 +6,7 @@ import { loadState, saveState, saveRealm, recordRunefallScore, resetRunefallScor
 import { createParticles, showToast, showUndoToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
 import { getAllCategories, getCategoryById, getCategoryTagClass } from './utils/categoryUtils.js';
 import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
+import { adventurerLabel, avatarMarkup } from './characters.js';
 import { createModal, closeModal, closeTopModal } from './components/Modal.js';
 import { openCreateCharModal } from './components/CreateCharacter.js';
 import { openTemplateManager, openTemplatePicker } from './components/TemplateManager.js';
@@ -36,6 +37,7 @@ window.state = {
 };
 
 window.currentUserId = localStorage.getItem('tavern_current_user') || null;
+window.currentAdventurer = null;
 window.completedPage = 0;
 window.connectionStatus = 'offline';
 window.lastSaveError = null;
@@ -65,10 +67,7 @@ window.openTemplatePicker = openTemplatePicker;
 window.openRealmDashboard = openRealmDashboard;
 window.openBackupManager = openBackupManager;
 window.openRealmMap = () => openRealmMap(window.state);
-window.openAdventurerProfile = () => openAdventurerProfile(window.state, {
-  name: document.getElementById('current-user-name')?.textContent,
-  avatar: document.getElementById('current-user-avatar')?.textContent
-});
+window.openAdventurerProfile = () => openAdventurerProfile(window.state, window.currentAdventurer || { name: 'Adventurer', avatar: '⚔️' });
 window.openActivityLog = () => openActivityLog(window.state.activity || []);
 window.openTavernBlocks = () => openTavernBlocks({
   scores: window.state.runefallScores || [],
@@ -257,9 +256,10 @@ async function updateCurrentUserDisplay() {
   try {
     const users = await loadUsers();
     const user = users.find(u => u.id === window.currentUserId);
+      window.currentAdventurer = user;
     if (user) {
-      document.getElementById('current-user-name').textContent = user.name;
-      document.getElementById('current-user-avatar').textContent = user.avatar;
+      document.getElementById('current-user-name').textContent = adventurerLabel(user);
+      document.getElementById('current-user-avatar').innerHTML = avatarMarkup(user.avatar, 'current-user-portrait');
     }
   } catch (err) {
     console.error('Failed to load user display:', err);

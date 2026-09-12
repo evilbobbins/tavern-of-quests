@@ -131,7 +131,7 @@ function validBackupUsers(users) {
     && (!users[REALM_KEY] || validRealm(users[REALM_KEY]))
     && realUserEntries(users).every(([, user]) =>
     user && typeof user === 'object' && validText(user.name, 50) && typeof user.avatar === 'string'
-    && user.avatar.length <= 16 && !validState(user.state)
+    && user.avatar.length <= 16 && (user.playerTag === undefined || validText(user.playerTag, 50)) && !validState(user.state)
   );
 }
 function backupPath(name) {
@@ -207,21 +207,21 @@ app.get('/api/users', async (req, res, next) => {
   try {
     const users = await loadUsers();
     res.json({ success: true, users: realUserEntries(users).map(([id, data]) => ({
-      id, name: data.name, avatar: data.avatar, level: data.state?.level || 1,
+      id, name: data.name, avatar: data.avatar, playerTag: data.playerTag || '', level: data.state?.level || 1,
       questCount: (data.state?.quests?.length || 0) + (data.state?.completed?.length || 0)
     })) });
   } catch (err) { next(err); }
 });
 app.post('/api/users', async (req, res, next) => {
-  const { name, avatar } = req.body || {};
-  if (!validText(name, 50) || (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 16))) {
+  const { name, avatar, playerTag } = req.body || {};
+  if (!validText(name, 50) || (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 16)) || (playerTag !== undefined && !validText(playerTag, 50))) {
     return res.status(400).json({ success: false, error: 'A character name (up to 50 characters) and a valid avatar are required.' });
   }
   try {
     const user = await withUserMutation(async users => {
       const id = `user_${Date.now().toString(36)}${crypto.randomBytes(3).toString('hex')}`;
-      users[id] = { name: name.trim(), avatar: avatar || '🧑', revision: 0, state: defaultState() };
-      await saveUsers(users); return { id, name: users[id].name, avatar: users[id].avatar };
+      users[id] = { name: name.trim(), avatar: avatar || '🧑', playerTag: playerTag?.trim() || '', revision: 0, state: defaultState() };
+      await saveUsers(users); return { id, name: users[id].name, avatar: users[id].avatar, playerTag: users[id].playerTag };
     });
     res.json({ success: true, user });
   } catch (err) { next(err); }
@@ -302,13 +302,14 @@ app.post('/api/runefall-scores/reset', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 app.put('/api/users/:userId', async (req, res, next) => {
-  const { name, avatar } = req.body || {};
-  if ((name !== undefined && !validText(name, 50)) || (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 16))) return res.status(400).json({ success: false, error: 'Invalid character details.' });
+  const { name, avatar, playerTag } = req.body || {};
+  if ((name !== undefined && !validText(name, 50)) || (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 16)) || (playerTag !== undefined && !validText(playerTag, 50))) return res.status(400).json({ success: false, error: 'Invalid character details.' });
   try {
     const result = await withUserMutation(async users => {
       if (!users[req.params.userId]) return false;
       if (name !== undefined) users[req.params.userId].name = name.trim();
       if (avatar !== undefined) users[req.params.userId].avatar = avatar;
+      if (playerTag !== undefined) users[req.params.userId].playerTag = playerTag.trim();
       await saveUsers(users); return true;
     });
     if (!result) return res.status(404).json({ success: false, error: 'User not found' });

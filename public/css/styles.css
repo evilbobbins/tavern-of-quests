@@ -29,7 +29,8 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   cursor: pointer; transition: all 0.3s ease; position: relative;
 }
 .char-card:hover { border-color: var(--gold); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); background: linear-gradient(135deg, rgba(244,228,193,0.2), rgba(244,228,193,0.1)); }
-.char-avatar { font-size: 4rem; filter: drop-shadow(0 0 10px rgba(212,168,67,0.3)); }
+.char-avatar { font-size: 4rem; filter: drop-shadow(0 0 10px rgba(212,168,67,0.3)); height:76px; width:76px; }
+.char-avatar .character-avatar-image { display:block; }
 .char-name { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold); font-weight: 700; }
 .char-stats { font-size: 0.85rem; color: var(--parchment-dark); font-family: 'Cinzel', serif; }
 .char-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; opacity: 0; transition: opacity 0.2s; }
@@ -72,6 +73,7 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 .admin-trigger, .roster-btn { background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); color: var(--gold-dark); padding: 6px 14px; border-radius: 20px; font-family: 'Cinzel', serif; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 6px; }
 .admin-trigger:hover, .roster-btn:hover { background: rgba(212,168,67,0.2); border-color: var(--gold); color: var(--gold); box-shadow: 0 0 10px rgba(212,168,67,0.3); }
 .current-user-display { display: flex; align-items: center; gap: 8px; font-family: 'Cinzel', serif; color: var(--gold); font-weight: 700; font-size: 1.1rem; padding: 4px 12px; background: rgba(212,168,67,0.1); border: 1px solid var(--gold-dark); border-radius: 20px; cursor: pointer; }
+.current-user-portrait { border:1px solid var(--gold-dark); border-radius:50%; display:block; height:25px; object-fit:cover; width:25px; }
 .current-user-avatar { font-size: 1.4rem; }
 .current-user-display { cursor: pointer; }
 
@@ -506,7 +508,19 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
 
 /* Adventurer achievements */
 .adventurer-hero { align-items: center; background: linear-gradient(135deg, rgba(212,168,67,.18), rgba(44,24,16,.25)); border: 1px solid rgba(212,168,67,.35); border-radius: 10px; display: flex; gap: 15px; margin-bottom: 16px; padding: 15px; }
-.adventurer-profile-avatar { background: rgba(26,15,10,.55); border: 1px solid var(--gold-dark); border-radius: 50%; display: grid; font-size: 2.4rem; height: 62px; place-items: center; width: 62px; }
+.adventurer-profile-avatar { background: rgba(26,15,10,.55); border: 1px solid var(--gold-dark); border-radius: 50%; display: grid; flex: 0 0 76px; font-size: 2.4rem; height: 76px; overflow: hidden; place-items: center; width: 76px; }
+.adventurer-profile-portrait { display: block; height: 100%; object-fit: cover; width: 100%; }
+.adventurer-hero-role { color: var(--gold-light); display: block; font-family: 'Cinzel', serif; font-size: .65rem; letter-spacing: .8px; margin-bottom: 4px; text-transform: uppercase; }
+.adventurer-story { background: rgba(26,15,10,.4); border-left: 3px solid var(--gold-dark); border-radius: 0 8px 8px 0; margin: -6px 8px 18px; padding: 10px 13px; }
+.adventurer-story span { color: var(--gold); display: block; font-family: 'Cinzel', serif; font-size: .68rem; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase; }
+.adventurer-story p { color: var(--parchment); font-size: .9rem; font-style: italic; line-height: 1.4; }
+.adventurer-profile-actions { align-items:center; display:flex; gap:6px; }
+.btn-profile-edit { background:rgba(212,168,67,.12); border:1px solid var(--gold-dark); border-radius:6px; color:var(--gold-light); cursor:pointer; font:700 .65rem 'Cinzel',serif; letter-spacing:.4px; padding:7px 9px; }
+.btn-profile-edit:hover { background:rgba(212,168,67,.24); border-color:var(--gold); }
+.avatar-art-button { cursor:zoom-in; padding:0; transition:transform .2s, box-shadow .2s; }
+.avatar-art-button:hover { box-shadow:0 0 18px rgba(212,168,67,.65); transform:scale(1.05); }
+.modal.portrait-viewer-modal { max-width:min(760px, 94vw); }
+.portrait-viewer { text-align:center; }.portrait-viewer-art { border:1px solid var(--gold-dark); border-radius:10px; display:block; max-height:68vh; max-width:100%; margin:0 auto; object-fit:contain; }.portrait-viewer p { color:var(--parchment-dark); font-family:'Cinzel',serif; font-size:.78rem; margin:12px 0 0; }
 .adventurer-hero h4 { color: var(--gold); font-family: 'Cinzel', serif; font-size: 1.2rem; margin-bottom: 4px; }
 .adventurer-hero p { color: var(--parchment-dark); font-family: 'Cinzel', serif; font-size: .76rem; }
 .adventurer-stat-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-bottom: 18px; }
@@ -810,3 +824,13 @@ body { font-family: 'IM Fell English', serif; background: #1a0f0a; color: #f4e4c
   font-size: 0.85rem;
   color: var(--parchment-dark);
 }
+
+/* Guild character roster */
+.guild-intro { color:var(--parchment-dark); font-style:italic; line-height:1.4; margin:-4px 0 14px; }
+.guild-character-grid { display:grid; gap:10px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.guild-character-choice { align-items:center; background:rgba(26,15,10,.55); border:1px solid rgba(212,168,67,.35); border-radius:9px; color:var(--parchment); cursor:pointer; display:flex; gap:10px; padding:9px; text-align:left; transition:.2s; }.guild-character-choice:hover,.guild-character-choice.selected { background:rgba(212,168,67,.15); border-color:var(--gold); box-shadow:0 0 14px rgba(212,168,67,.2); }
+.guild-character-choice img { border:1px solid var(--gold-dark); border-radius:50%; height:58px; object-fit:cover; width:58px; }.guild-character-choice span { min-width:0; }.guild-character-choice strong,.guild-character-choice small,.guild-character-choice em { display:block; }.guild-character-choice strong { color:var(--gold-light); font:700 .76rem 'Cinzel',serif; }.guild-character-choice small { color:#bda2db; font:.62rem 'Cinzel',serif; margin-top:3px; }.guild-character-choice em { color:var(--parchment-dark); font-size:.73rem; line-height:1.2; margin-top:5px; }
+.guild-character-choice.active, .guild-character-choice:disabled { background:rgba(122,111,96,.22); border-color:rgba(189,170,137,.26); color:var(--parchment-dark); cursor:default; filter:grayscale(.7); opacity:.62; }
+.guild-character-choice.active em { color:var(--parchment-dark); font-style:normal; }
+.character-avatar-image { border:1px solid var(--gold-dark); border-radius:50%; height:100%; object-fit:cover; width:100%; }.character-avatar-emoji { font-size:inherit; }
+@media (max-width:520px) { .guild-character-grid { grid-template-columns:1fr; } }

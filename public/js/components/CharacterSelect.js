@@ -1,6 +1,7 @@
 import { loadUsers, deleteUser } from '../services/api.js';
 import { escapeHtml } from '../utils/helpers.js';
 import { openCreateCharModal } from './CreateCharacter.js';
+import { adventurerLabel, avatarMarkup } from '../characters.js';
 
 export async function renderCharacterSelect() {
   const container = document.getElementById('char-select-screen');
@@ -27,8 +28,8 @@ export async function renderCharacterSelect() {
         <button class="char-action-btn char-edit-btn" onclick="event.stopPropagation(); window.openEditCharModal('${u.id}')" title="Edit character">\u270F\uFE0F</button>
         <button class="char-action-btn char-delete-btn" onclick="event.stopPropagation(); window.deleteUser('${u.id}')" title="Delete character">&times;</button>
       </div>
-      <div class="char-avatar">${u.avatar || '\u{1F9D1}'}</div>
-      <div class="char-name">${escapeHtml(u.name)}</div>
+      <div class="char-avatar">${avatarMarkup(u.avatar)}</div>
+      <div class="char-name">${escapeHtml(adventurerLabel(u))}</div>
       <div class="char-stats">Level ${u.level} \u2022 ${u.questCount} Quests</div>
     </div>
   `).join('');

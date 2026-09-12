@@ -50,11 +50,11 @@ export async function resetRunefallScores() {
   return await apiFetch('/api/runefall-scores/reset', { method: 'POST' });
 }
 
-export async function createUser(name, avatar) {
+export async function createUser(name, avatar, playerTag = '') {
   return await apiFetch('/api/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, avatar })
+    body: JSON.stringify({ name, avatar, playerTag })
   });
 }
 

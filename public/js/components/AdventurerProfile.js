@@ -1,5 +1,17 @@
 import { createModal } from './Modal.js';
 import { escapeHtml } from '../utils/helpers.js';
+import { adventurerLabel, avatarMarkup, getGuildCharacter } from '../characters.js';
+
+function openPortraitViewer(character) {
+  const overlay = createModal(`
+    <div class="portrait-viewer" role="dialog" aria-modal="true" aria-label="${escapeHtml(character.name)} portrait">
+      <div class="modal-header"><h3 class="modal-title">${escapeHtml(character.name)}</h3><button class="modal-close" type="button" onclick="window.closeTopModal()" aria-label="Close portrait">&times;</button></div>
+      <img class="portrait-viewer-art" src="${character.portrait}" alt="Full artwork of ${escapeHtml(character.name)}">
+      <p>${escapeHtml(character.role)}</p>
+    </div>
+  `);
+  overlay.querySelector('.modal')?.classList.add('portrait-viewer-modal');
+}
 
 export function openAdventurerProfile(state, adventurer) {
   const completed = (state.completed || []).length + (state.archived || []).length;
@@ -19,6 +31,10 @@ export function openAdventurerProfile(state, adventurer) {
     unlocked: level >= rank.level
   }));
   const currentRank = [...rankAchievements].reverse().find(rank => rank.unlocked);
+  const character = getGuildCharacter(adventurer.avatar);
+  const avatarHtml = character ? `<button class="adventurer-profile-avatar avatar-art-button" id="view-adventurer-art" type="button" aria-label="View full artwork for ${escapeHtml(character.name)}">${avatarMarkup(adventurer.avatar, 'adventurer-profile-portrait')}</button>` : `<span class="adventurer-profile-avatar">${avatarMarkup(adventurer.avatar, 'adventurer-profile-portrait')}</span>`;
+  const editButtonHtml = adventurer.id ? `<button class="btn-profile-edit" id="edit-adventurer" type="button">✏️ Edit Adventurer</button>` : '';
+  const storyHtml = character ? `<div class="adventurer-story"><span>Guild Tale</span><p>${escapeHtml(character.story)}</p></div>` : '';
   const achievements = [
     { icon: '📜', name: 'First Quest', detail: 'Complete your first quest.', unlocked: completed >= 1 },
     { icon: '🏅', name: 'Veteran Adventurer', detail: `${Math.min(completed, 10)} / 10 quests completed`, unlocked: completed >= 10 },
@@ -43,12 +59,20 @@ export function openAdventurerProfile(state, adventurer) {
     <div class="adventurer-profile" role="dialog" aria-modal="true" aria-label="Adventurer achievements">
       <div class="modal-header">
         <h3 class="modal-title">🏆 Adventurer's Chronicle</h3>
-        <button class="modal-close" type="button" onclick="window.closeTopModal()" aria-label="Close">&times;</button>
+        <div class="adventurer-profile-actions">
+          ${editButtonHtml}
+          <button class="modal-close" type="button" onclick="window.closeTopModal()" aria-label="Close">&times;</button>
+        </div>
       </div>
-      <div class="adventurer-hero">
-        <span class="adventurer-profile-avatar">${escapeHtml(adventurer.avatar || '⚔️')}</span>
-        <div><h4>${escapeHtml(adventurer.name || 'Adventurer')}</h4><p>${currentRank ? currentRank.name : 'Unranked Adventurer'} · Level ${level} · ${state.xp || 0} XP</p></div>
+      <div class="adventurer-hero ${character ? 'guild-hero' : ''}">
+        ${avatarHtml}
+        <div>
+          ${character ? `<span class="adventurer-hero-role">${escapeHtml(character.role)}</span>` : ''}
+          <h4>${escapeHtml(adventurerLabel(adventurer))}</h4>
+          <p>${currentRank ? currentRank.name : 'Unranked Adventurer'} · Level ${level} · ${state.xp || 0} XP</p>
+        </div>
       </div>
+      ${storyHtml}
       <div class="adventurer-stat-grid">
         <div><strong>${completed}</strong><span>Completed</span></div>
         <div><strong>${active}</strong><span>Active</span></div>
@@ -62,4 +86,9 @@ export function openAdventurerProfile(state, adventurer) {
     </div>
   `);
   overlay.querySelector('.modal')?.classList.add('adventurer-profile-modal');
+  overlay.querySelector('#view-adventurer-art')?.addEventListener('click', () => openPortraitViewer(character));
+  overlay.querySelector('#edit-adventurer')?.addEventListener('click', () => {
+    overlay.remove();
+    window.openEditCharModal?.(adventurer.id);
+  });
 }

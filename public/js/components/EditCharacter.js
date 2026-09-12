@@ -1,9 +1,13 @@
 import { loadUsers, updateUser } from '../services/api.js';
-import { renderEmojiGrid } from './EmojiPicker.js';
 import { createModal, closeModal } from './Modal.js';
-import { showToast, escapeAttr } from '../utils/helpers.js';
+import { showToast, escapeAttr, escapeHtml } from '../utils/helpers.js';
+import { GUILD_CHARACTERS } from '../characters.js';
 
 window.selectedEditAvatar = '\u{1F9D1}';
+
+function guildCharacterCards(selectedId) {
+  return GUILD_CHARACTERS.map(character => `<button type="button" class="guild-character-choice ${character.id === selectedId ? 'active' : ''}" data-character="${character.id}" ${character.id === selectedId ? 'disabled aria-current="true"' : ''}><img src="${character.portrait}" alt=""><span><strong>${escapeHtml(character.name)}</strong><small>${escapeHtml(character.role)}</small><em>${character.id === selectedId ? 'Selected guild hero' : escapeHtml(character.story)}</em></span></button>`).join('');
+}
 window.editingUserId = null;
 
 window.openEditCharModal = async (userId) => {
@@ -16,7 +20,7 @@ window.openEditCharModal = async (userId) => {
     return;
   }
 
-  window.selectedEditAvatar = user.avatar;
+  window.selectedEditAvatar = GUILD_CHARACTERS.some(character => character.id === user.avatar) ? user.avatar : GUILD_CHARACTERS[0].id;
 
   const content = `
     <div class="modal-header">
@@ -24,47 +28,38 @@ window.openEditCharModal = async (userId) => {
       <button class="modal-close" onclick="window.closeModal()">&times;</button>
     </div>
     <div class="form-group" style="margin-bottom:14px;">
-      <label>Character Name</label>
-      <input type="text" id="edit-char-name" value="${escapeAttr(user.name)}" maxlength="30">
+      <label for="edit-player-tag">Your Player Tag</label>
+      <input type="text" id="edit-player-tag" value="${escapeAttr(user.playerTag || '')}" placeholder="e.g., Bob, Mum, Player One" maxlength="30" autofocus>
     </div>
-    <div class="emoji-picker-container">
-      <span class="emoji-picker-label">Choose Avatar</span>
-      <div class="emoji-selected-preview">
-        <span class="preview-emoji" id="avatar-preview-edit">${window.selectedEditAvatar}</span>
-        <span class="preview-text">Selected Avatar</span>
-      </div>
-      <div class="emoji-grid" id="avatar-grid-edit"></div>
-    </div>
+    <p class="guild-intro">Choose a guild hero. The muted card is the identity selected for this adventurer.</p>
+    <div class="guild-character-grid" id="edit-guild-character-grid">${guildCharacterCards(window.selectedEditAvatar)}</div>
     <div class="modal-actions">
       <button class="btn-modal btn-cancel" onclick="window.closeModal()">Cancel</button>
       <button class="btn-modal btn-save" onclick="window.handleSaveEditChar()">\u{1F4BE} Save Changes</button>
     </div>
   `;
 
-  createModal(content);
-
-  setTimeout(() => {
-    renderEmojiGrid('avatar-grid-edit');
-    const cells = document.querySelectorAll('#avatar-grid-edit .emoji-cell');
-    for (let cell of cells) {
-      if (cell.textContent.trim() === window.selectedEditAvatar) {
-        window.handleEmojiSelect(cell.textContent, 'avatar-grid-edit', cell);
-        break;
-      }
-    }
-  }, 50);
+  const overlay = createModal(content);
+  overlay.querySelector('#edit-guild-character-grid').addEventListener('click', event => {
+    const choice = event.target.closest('[data-character]');
+    if (!choice) return;
+    window.selectedEditAvatar = choice.dataset.character;
+    overlay.querySelector('#edit-guild-character-grid').innerHTML = guildCharacterCards(window.selectedEditAvatar);
+  });
 };
 
 window.handleSaveEditChar = async () => {
-  const name = document.getElementById('edit-char-name').value.trim();
-  if (!name) {
-    showToast('\u26A0\uFE0F', 'Name Required', 'Please enter a character name.');
+  const playerTag = document.getElementById('edit-player-tag').value.trim();
+  const character = GUILD_CHARACTERS.find(item => item.id === window.selectedEditAvatar);
+  if (!playerTag) {
+    showToast('\u26A0\uFE0F', 'Player Tag Required', 'Add a short tag so the party knows who is playing this hero.');
     return;
   }
 
   const result = await updateUser(window.editingUserId, {
-    name: name,
-    avatar: window.selectedEditAvatar
+    name: character.name,
+    avatar: character.id,
+    playerTag
   });
 
   if (result.success) {
