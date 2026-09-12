@@ -13,7 +13,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 ### 🧙🧝 Adventurers and progress
 
 - Choose from twelve illustrated guild heroes spanning knight, spellweaver, scout, artificer, wizard, rogue, barbarian, bard, ranger, monk, fighter, and cleric.
-- The guild’s newest heroes are **Kaela Stoneheart**, **Merrin Goldstrings**, **Thalia Fernwatch**, **Sori Windstep**, **Rowan Vale**, and **Sister Elowen Brightmere**—each with a portrait, role, and Guild Tale.
+- The guild’s newest heroes are **Kaela Stoneheart**, **Merrin Goldstrings**, **Talia Fernwatch**, **Sori Windstep**, **Rowan Vale**, and **Sister Elowen Brightmere**—each with a portrait, role, and Guild Tale.
 - By default, a guild hero can belong to only one adventurer. Tavern Keepers can temporarily allow duplicates, but cannot restore the one-hero rule until any duplicates are resolved.
 - Give each hero a separate **Player Tag**, so a party can tell who is playing whom.
 - Update a guild identity at any time from **Active Guild Members**; legacy emoji adventurers can be welcomed into the illustrated guild.
