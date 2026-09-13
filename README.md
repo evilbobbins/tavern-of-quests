@@ -19,7 +19,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Update a guild identity at any time from **Active Guild Members**; legacy emoji adventurers can be welcomed into the illustrated guild.
 - Join the Guild and Edit Adventurer screens share a spacious four-column desktop roster, with responsive two- and one-column layouts for smaller displays.
 - Keep each adventurer’s quests, completed history, XP, level, and streak private to them.
-- Open an adventurer’s chronicle directly from the top bar to review achievements, rank, portrait, and Guild Tale.
+- Open an adventurer’s chronicle directly from the top bar to review achievements, rank, portrait, Guild Tale, and any current Tavern Games crowns.
 - Click a Chronicle portrait to admire the hero’s full artwork, or edit the adventurer directly from the Chronicle.
 
 ### 📋 Quest board
@@ -47,7 +47,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Explore the **Realm Map** to see active quests grouped by location.
 - The realm begins with **The Castle**, **The Wizard’s Lair**, **Mooncrest Academy**, **Dragon's Den**, and the **Bog of Eternal Stench**.
 - Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options. Location creation is currently curated to keep the Realm Map consistent.
-- The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including the current **Runefall Champion**.
+- The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including illustrated **Runefall** and **Relic Recall** champions plus portrait-led adventurer roster entries.
 
 ### 🗄️ Backup Vault
 
@@ -58,7 +58,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Export or import a complete realm snapshot for an offline copy or a move between Taverns.
 - Clearly separated current-adventurer import and export tools keep individual progress backups distinct from the whole realm.
 
-### 🎲 Tavern Games: Runefall Revel
+### 🎲 Tavern Games: Runefall Revel and Relic Recall
 
 - A playable tavern-themed block-stacking mini-game built into the status bar.
 - Stack enchanted runes, clear rows, gain score, and survive ever-faster revel levels.
@@ -67,13 +67,18 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Completed games with a score are recorded in a shared realm leaderboard with the adventurer, score, and date achieved.
 - The game table displays the top three scores; first place earns the title **Runefall Champion**.
 - Open it with **🎲 Tavern Games** without leaving the quest board.
+- **Relic Recall** is a timed card-matching game using illustrated guild heroes and realm relics. Start with a 2×2 board, clear pairs before the sands run out, and advance into larger boards.
+- Both games keep independent shared top-three leaderboards with scores and dates achieved.
+- First place is the current game champion; an adventurer holding both crowns earns the special **Tavern Games Champion** honour.
+- Champions are celebrated in their Adventurer’s Chronicle and on their **Active Guild Members** roster card.
+- Tavern Keepers can reset either shared game scoreboard through confirmation-gated controls.
 
 ### 👑 Tavern Keeper tools
 
 - Manage shared quest templates.
 - Open the activity chronicle and the Backup Vault.
 - Use **Active Guild Members** to switch adventurers, welcome a new guild member, or update a hero’s player tag and identity.
-- Reset the shared Runefall score ledger through a confirmation-gated scoreboard control.
+- Reset the shared Runefall Revel or Relic Recall score ledger through confirmation-gated scoreboard controls.
 - Refresh the current realm from the server and inspect connection status.
 - Reset a character’s streak or progress when appropriate, with guarded destructive actions.
 
@@ -193,7 +198,9 @@ tavern-of-quests/
 │           ├── CharacterSelect.js     # Active Guild Members screen
 │           ├── CreateCharacter.js     # Join the Guild flow
 │           ├── EditCharacter.js       # Player tag and guild identity editor
-│           └── TavernBlocks.js        # Runefall Revel mini-game
+│           ├── TavernBlocks.js        # Runefall Revel mini-game
+│           ├── MemoryMatch.js         # Relic Recall matching game
+│           └── TavernGames.js         # Tavern Games chooser
 └── data/                             # Created inside the persistent Docker volume
 ```
 

@@ -31,6 +31,7 @@ export async function renderCharacterSelect() {
       <div class="char-avatar">${avatarMarkup(u.avatar)}</div>
       <div class="char-name">${escapeHtml(adventurerLabel(u))}</div>
       <div class="char-stats">Level ${u.level} \u2022 ${u.questCount} Quests</div>
+      ${(u.championGames || []).length ? `<div class="char-champion-badges">${u.championGames.includes('runefall') ? '<span>🔷 Runefall Champion</span>' : ''}${u.championGames.includes('memory') ? '<span>🃏 Relic Recall Champion</span>' : ''}</div>` : ''}
     </div>
   `).join('');
   

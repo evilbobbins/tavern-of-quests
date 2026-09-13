@@ -49,6 +49,11 @@ export function openAdventurerProfile(state, adventurer) {
   const avatarHtml = character ? `<button class="adventurer-profile-avatar avatar-art-button" id="view-adventurer-art" type="button" aria-label="View full artwork for ${escapeHtml(character.name)}">${avatarMarkup(adventurer.avatar, 'adventurer-profile-portrait')}</button>` : `<span class="adventurer-profile-avatar">${avatarMarkup(adventurer.avatar, 'adventurer-profile-portrait')}</span>`;
   const editButtonHtml = adventurer.id ? `<button class="btn-profile-edit" id="edit-adventurer" type="button">✏️ Edit Adventurer</button>` : '';
   const storyHtml = character ? `<div class="adventurer-story"><span>Guild Tale</span><p>${escapeHtml(character.story)}</p></div>` : '';
+  const championGames = [
+    { scores: state.runefallScores || [], icon: '🔷', label: 'Runefall Champion' },
+    { scores: state.memoryScores || [], icon: '🃏', label: 'Relic Recall Champion' }
+  ].filter(game => game.scores[0]?.userId === adventurer.id);
+  const championHonourHtml = championGames.length ? `<section class="adventurer-champion-honour"><span>👑</span><div><small>${championGames.length === 2 ? 'Tavern Games Champion' : 'Tavern Champion'}</small><strong>${championGames.map(game => `${game.icon} ${game.label}`).join(' · ')}</strong><p>${championGames.length === 2 ? 'This adventurer currently holds both crowns in the tavern games.' : 'This adventurer currently holds the realm’s highest score.'}</p></div></section>` : '';
   const achievements = [
     { icon: '📜', name: 'First Quest', detail: 'Complete your first quest.', unlocked: completed >= 1 },
     { icon: '🏅', name: 'Veteran Adventurer', detail: `${Math.min(completed, 10)} / 10 quests completed`, unlocked: completed >= 10 },
@@ -94,6 +99,7 @@ export function openAdventurerProfile(state, adventurer) {
         </div>
       </div>
       ${storyHtml}
+      ${championHonourHtml}
       <div class="adventurer-stat-grid">
         <div><strong>${completed}</strong><span>Completed</span></div>
         <div><strong>${active}</strong><span>Active</span></div>

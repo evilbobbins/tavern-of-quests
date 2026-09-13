@@ -232,9 +232,16 @@ app.post('/api/realm/import', async (req, res, next) => {
 app.get('/api/users', async (req, res, next) => {
   try {
     const users = await loadUsers();
+    const realm = realmData(users);
+    const runefallChampion = realm.runefallScores[0]?.userId;
+    const memoryChampion = realm.memoryScores[0]?.userId;
     res.json({ success: true, users: realUserEntries(users).map(([id, data]) => ({
       id, name: data.name, avatar: data.avatar, playerTag: data.playerTag || '', level: data.state?.level || 1,
-      questCount: (data.state?.quests?.length || 0) + (data.state?.completed?.length || 0)
+      questCount: (data.state?.quests?.length || 0) + (data.state?.completed?.length || 0),
+      championGames: [
+        ...(runefallChampion === id ? ['runefall'] : []),
+        ...(memoryChampion === id ? ['memory'] : [])
+      ]
     })) });
   } catch (err) { next(err); }
 });
