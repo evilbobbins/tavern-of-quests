@@ -29,7 +29,7 @@ async function loadUsers() {
     throw new Error('Unable to read tavern data');
   }
 }
-function defaultRealm() { return { templates: [], customCategories: [], runefallScores: [], allowDuplicateGuildHeroes: false, revision: 0 }; }
+function defaultRealm() { return { templates: [], customCategories: [], runefallScores: [], memoryScores: [], allowDuplicateGuildHeroes: false, revision: 0 }; }
 function realUserEntries(users) { return Object.entries(users).filter(([id]) => id !== REALM_KEY); }
 function realmData(users) {
   if (users[REALM_KEY] && typeof users[REALM_KEY] === 'object' && !Array.isArray(users[REALM_KEY])) {
@@ -37,6 +37,7 @@ function realmData(users) {
       templates: Array.isArray(users[REALM_KEY].templates) ? users[REALM_KEY].templates : [],
       customCategories: Array.isArray(users[REALM_KEY].customCategories) ? users[REALM_KEY].customCategories : [],
       runefallScores: normalizeRunefallScores(users[REALM_KEY].runefallScores),
+      memoryScores: normalizeRunefallScores(users[REALM_KEY].memoryScores),
       allowDuplicateGuildHeroes: users[REALM_KEY].allowDuplicateGuildHeroes === true,
       revision: Number.isInteger(users[REALM_KEY].revision) ? users[REALM_KEY].revision : 0
     };
@@ -47,7 +48,7 @@ function realmData(users) {
     for (const template of user?.state?.templates || []) if (template?.id) templates.set(template.id, template);
     for (const category of user?.state?.customCategories || []) if (category?.id) customCategories.set(category.id, category);
   }
-  return { templates: [...templates.values()], customCategories: [...customCategories.values()], runefallScores: [], allowDuplicateGuildHeroes: false, revision: 0 };
+  return { templates: [...templates.values()], customCategories: [...customCategories.values()], runefallScores: [], memoryScores: [], allowDuplicateGuildHeroes: false, revision: 0 };
 }
 function ensureRealm(users) {
   const realm = realmData(users);
@@ -123,6 +124,7 @@ function validRealm(realm) {
     && Array.isArray(realm.templates) && realm.templates.length <= 250
     && Array.isArray(realm.customCategories) && realm.customCategories.length <= 100
     && (realm.runefallScores === undefined || (Array.isArray(realm.runefallScores) && realm.runefallScores.length <= 100 && realm.runefallScores.every(validRunefallScore)))
+    && (realm.memoryScores === undefined || (Array.isArray(realm.memoryScores) && realm.memoryScores.length <= 100 && realm.memoryScores.every(validRunefallScore)))
     && (realm.allowDuplicateGuildHeroes === undefined || typeof realm.allowDuplicateGuildHeroes === 'boolean');
 }
 function duplicateGuildHeroes(users) {
@@ -263,7 +265,7 @@ app.get('/api/state', async (req, res, next) => {
     const user = users[req.query.userId];
     if (!user) return res.status(404).json({ success: false, error: 'User not found' });
     const realm = realmData(users);
-    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, runefallScores: realm.runefallScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, _revision: user.revision || 0, _realmRevision: realm.revision } });
+    res.json({ success: true, data: { ...user.state, templates: realm.templates, customCategories: realm.customCategories, runefallScores: realm.runefallScores, memoryScores: realm.memoryScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, _revision: user.revision || 0, _realmRevision: realm.revision } });
   } catch (err) { next(err); }
 });
 app.put('/api/state', async (req, res, next) => {
@@ -295,7 +297,7 @@ app.put('/api/realm', async (req, res, next) => {
     const result = await withUserMutation(async users => {
       const realm = ensureRealm(users);
       if (_realmRevision !== realm.revision) return { status: 409, body: { success: false, conflict: true, error: 'The shared realm changed. Reload the latest locations and templates.' } };
-      users[REALM_KEY] = { templates, customCategories, runefallScores: realm.runefallScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, revision: realm.revision + 1 };
+      users[REALM_KEY] = { templates, customCategories, runefallScores: realm.runefallScores, memoryScores: realm.memoryScores, allowDuplicateGuildHeroes: realm.allowDuplicateGuildHeroes, revision: realm.revision + 1 };
       await saveUsers(users);
       return { status: 200, body: { success: true, realm: users[REALM_KEY] } };
     });
@@ -345,6 +347,35 @@ app.post('/api/runefall-scores/reset', async (req, res, next) => {
     const result = await withUserMutation(async users => {
       const realm = ensureRealm(users);
       users[REALM_KEY] = { ...realm, runefallScores: [], revision: realm.revision + 1 };
+      await saveUsers(users);
+      return users[REALM_KEY];
+    });
+    res.json({ success: true, realm: result });
+  } catch (err) { next(err); }
+});
+app.post('/api/memory-scores', async (req, res, next) => {
+  const { userId, score, pairs, level } = req.body || {};
+  if (!validText(userId, 80) || !Number.isInteger(score) || score <= 0 || score > 10000000 || !Number.isInteger(pairs) || pairs < 0 || pairs > 100000 || !Number.isInteger(level) || level < 1 || level > 100000) {
+    return res.status(400).json({ success: false, error: 'A valid Relic Recall score is required.' });
+  }
+  try {
+    const result = await withUserMutation(async users => {
+      const user = users[userId];
+      if (!user) return { status: 404, body: { success: false, error: 'Adventurer not found.' } };
+      const realm = ensureRealm(users);
+      const entry = { id: `memory_${Date.now().toString(36)}${crypto.randomBytes(3).toString('hex')}`, userId, name: user.name, avatar: user.avatar, score, lines: pairs, level, achievedAt: new Date().toISOString() };
+      users[REALM_KEY] = { ...realm, memoryScores: normalizeRunefallScores([...realm.memoryScores, entry]), revision: realm.revision + 1 };
+      await saveUsers(users);
+      return { status: 201, body: { success: true, entry, realm: users[REALM_KEY] } };
+    });
+    res.status(result.status).json(result.body);
+  } catch (err) { next(err); }
+});
+app.post('/api/memory-scores/reset', async (req, res, next) => {
+  try {
+    const result = await withUserMutation(async users => {
+      const realm = ensureRealm(users);
+      users[REALM_KEY] = { ...realm, memoryScores: [], revision: realm.revision + 1 };
       await saveUsers(users);
       return users[REALM_KEY];
     });

@@ -2,7 +2,7 @@ import { renderCharacterSelect } from './components/CharacterSelect.js';
 import { renderQuestBoard } from './components/QuestBoard.js';
 import { renderCompletedQuests } from './components/CompletedQuests.js';
 import { openAdminPanel } from './components/AdminPanel.js';
-import { loadState, saveState, saveRealm, recordRunefallScore, resetRunefallScores, loadUsers } from './services/api.js';
+import { loadState, saveState, saveRealm, recordRunefallScore, resetRunefallScores, recordMemoryScore, resetMemoryScores, loadUsers } from './services/api.js';
 import { createParticles, showToast, showUndoToast, showLevelUp, escapeHtml, escapeAttr } from './utils/helpers.js';
 import { getAllCategories, getCategoryById, getCategoryTagClass } from './utils/categoryUtils.js';
 import { CONFIG, BUILTIN_CATEGORIES } from './config.js';
@@ -15,7 +15,9 @@ import { openBackupManager } from './components/BackupManager.js';
 import { openRealmMap } from './components/RealmMap.js';
 import { openAdventurerProfile } from './components/AdventurerProfile.js';
 import { openActivityLog } from './components/ActivityLog.js';
-import { openTavernBlocks } from './components/TavernBlocks.js';
+import { openTavernBlocks as openRunefallRevel } from './components/TavernBlocks.js';
+import { openMemoryMatch } from './components/MemoryMatch.js';
+import { openTavernGames } from './components/TavernGames.js';
 import { awardLootForQuest, showLootReveal } from './utils/loot.js';
 import { openLootLedger } from './components/LootLedger.js';
 import './components/EditCharacter.js';
@@ -35,6 +37,7 @@ window.state = {
   filters: { main: 'all', side: 'all' },
   customCategories: [],
   runefallScores: [],
+  memoryScores: [],
   loot: [],
   _realmRevision: 0,
   allowDuplicateGuildHeroes: false,
@@ -74,7 +77,7 @@ window.openRealmMap = () => openRealmMap(window.state);
 window.openAdventurerProfile = () => openAdventurerProfile(window.state, window.currentAdventurer || { name: 'Adventurer', avatar: '⚔️' });
 window.openActivityLog = () => openActivityLog(window.state.activity || []);
 window.openLootLedger = openLootLedger;
-window.openTavernBlocks = () => openTavernBlocks({
+function openRunefallGame() { return openRunefallRevel({
   scores: window.state.runefallScores || [],
   onScore: async ({ score, lines, level }) => {
     const result = await recordRunefallScore(window.currentUserId, score, lines, level);
@@ -83,6 +86,19 @@ window.openTavernBlocks = () => openTavernBlocks({
     window.state._realmRevision = result.realm.revision || window.state._realmRevision;
     return window.state.runefallScores;
   }
+}); }
+window.openTavernBlocks = () => openTavernGames({
+  openRunefall: openRunefallGame,
+  openMemory: () => openMemoryMatch({
+    scores: window.state.memoryScores || [],
+    onScore: async ({ score, pairs, level }) => {
+      const result = await recordMemoryScore(window.currentUserId, score, pairs, level);
+      if (!result.success || !result.realm) throw new Error(result.error || 'Could not record that Relic Recall score.');
+      window.state.memoryScores = result.realm.memoryScores || [];
+      window.state._realmRevision = result.realm.revision || window.state._realmRevision;
+      return window.state.memoryScores;
+    }
+  })
 });
 window.closeTopModal = closeTopModal;
 
@@ -207,6 +223,7 @@ async function loadAppState() {
     if (!Array.isArray(window.state.templates)) window.state.templates = [];
     if (!Array.isArray(window.state.runefallScores)) window.state.runefallScores = [];
     if (!Array.isArray(window.state.loot)) window.state.loot = [];
+    if (!Array.isArray(window.state.memoryScores)) window.state.memoryScores = [];
     if (!Number.isInteger(window.state._realmRevision)) window.state._realmRevision = 0;
     if (!Array.isArray(window.state.activity)) window.state.activity = [];
     
@@ -961,6 +978,16 @@ window.adminResetRunefallScores = async () => {
   window.state._realmRevision = result.realm.revision || window.state._realmRevision;
   closeTopModal();
   showToast('🏆', 'Scoreboard Reset', 'The Runefall score ledger has been cleared.');
+};
+
+window.adminResetMemoryScores = async () => {
+  if (!confirm('Reset the shared Relic Recall scoreboard? This removes every recorded score from the realm.')) return;
+  const result = await resetMemoryScores();
+  if (!result.success || !result.realm) return showToast('⚠️', 'Reset Failed', result.error || 'Could not reset the Relic Recall scoreboard.');
+  window.state.memoryScores = [];
+  window.state._realmRevision = result.realm.revision || window.state._realmRevision;
+  closeTopModal();
+  showToast('🃏', 'Scoreboard Reset', 'The Relic Recall score ledger has been cleared.');
 };
 
 window.adminExportData = () => {

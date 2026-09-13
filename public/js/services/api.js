@@ -59,6 +59,17 @@ export async function resetRunefallScores() {
   return await apiFetch('/api/runefall-scores/reset', { method: 'POST' });
 }
 
+export async function recordMemoryScore(userId, score, pairs, level) {
+  return await apiFetch('/api/memory-scores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, score, pairs, level })
+  });
+}
+
+export async function resetMemoryScores() {
+  return await apiFetch('/api/memory-scores/reset', { method: 'POST' });
+}
 export async function createUser(name, avatar, playerTag = '') {
   return await apiFetch('/api/users', {
     method: 'POST',

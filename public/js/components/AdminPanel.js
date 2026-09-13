@@ -93,6 +93,16 @@ export function openAdminPanel(state) {
     </div>
     
     <div class="admin-section">
+    <div class="admin-section">
+      <div class="admin-section-title">🃏 Relic Recall Scoreboard</div>
+      <div class="admin-grid">
+        <button class="admin-btn" onclick="window.adminResetMemoryScores()" style="grid-column:1/-1;">
+          <span class="admin-icon">🃏</span>
+          <span>Reset Scoreboard</span>
+          <span class="admin-label">Clear all shared Relic Recall scores</span>
+        </button>
+      </div>
+    </div>
       <div class="admin-section-title">🗄️ Realm Backup Vault</div>
       <div class="admin-grid">
         <button class="admin-btn" onclick="window.openBackupManager()" style="grid-column:1/-1;">

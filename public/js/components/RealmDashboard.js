@@ -24,6 +24,8 @@ export async function openRealmDashboard() {
     const runefallScores = states.find(entry => Array.isArray(entry.state?.runefallScores))?.state?.runefallScores || [];
     const champion = [...runefallScores].sort((a, b) => b.score - a.score || new Date(a.achievedAt) - new Date(b.achievedAt))[0];
     const reminders = states.flatMap(({ user, state }) => (state?.quests || []).map(quest => ({ user, quest, status: dueStatus(quest) })).filter(item => item.status));
+    const memoryScores = states.find(entry => Array.isArray(entry.state?.memoryScores))?.state?.memoryScores || [];
+    const memoryChampion = [...memoryScores].sort((a, b) => b.score - a.score || new Date(a.achievedAt) - new Date(b.achievedAt))[0];
     const roster = states.map(({ user, state }) => `<div class="realm-member"><span class="realm-avatar">${escapeHtml(user.avatar)}</span><div><strong>${escapeHtml(user.name)}</strong><div>${state?.quests?.length || 0} active · ${state?.completed?.length || 0} completed · Level ${state?.level || 1}</div></div></div>`).join('') || '<div class="empty-state">No adventurers have joined the realm yet.</div>';
     const reminderHtml = reminders.length
       ? reminders.sort((a, b) => a.quest.dueDate.localeCompare(b.quest.dueDate)).map(({ user, quest, status }) => `<div class="realm-reminder ${status.urgent ? 'urgent' : ''}"><span>${escapeHtml(user.avatar)}</span><div><strong>${escapeHtml(quest.name)}</strong><div>${escapeHtml(user.name)} · ${status.label}</div></div></div>`).join('')
@@ -32,6 +34,7 @@ export async function openRealmDashboard() {
       <div class="modal-header"><h3 class="modal-title">🌍 The Realm Chronicle</h3><button class="modal-close" onclick="window.closeTopModal()">&times;</button></div>
       <div class="realm-stats"><div><strong>${users.length}</strong><span>Adventurers</span></div><div><strong>${active}</strong><span>Active quests</span></div><div><strong>${completed}</strong><span>Completed quests</span></div></div>
       <section class="realm-champion"><span>${champion ? escapeHtml(champion.avatar || '👑') : '👑'}</span><div><small>Current Runefall Champion</small><strong>${champion ? escapeHtml(champion.name) : 'The crown awaits'}</strong><p>${champion ? `${Number(champion.score).toLocaleString()} renown · ${new Date(champion.achievedAt).toLocaleDateString()}` : 'Play Runefall Revel to claim the first score.'}</p></div></section>
+      <section class="realm-champion"><span>${memoryChampion ? escapeHtml(memoryChampion.avatar || '🃏') : '🃏'}</span><div><small>Current Relic Recall Champion</small><strong>${memoryChampion ? escapeHtml(memoryChampion.name) : 'The crown awaits'}</strong><p>${memoryChampion ? `${Number(memoryChampion.score).toLocaleString()} renown · ${new Date(memoryChampion.achievedAt).toLocaleDateString()}` : 'Play Relic Recall to claim the first score.'}</p></div></section>
       <div class="admin-section"><div class="admin-section-title">⏰ Due Soon</div><div class="realm-reminders">${reminderHtml}</div></div>
       <div class="admin-section"><div class="admin-section-title">🛡️ Adventurer Roster</div><div class="realm-roster">${roster}</div></div>
       <div class="modal-actions"><button class="btn-modal btn-cancel" onclick="window.closeTopModal()">Close</button></div>`;
