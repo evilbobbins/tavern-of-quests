@@ -24,6 +24,12 @@ function renderScoreboard(scores) {
   if (!topScores.length) return '<div class="runefall-empty">No scores yet. Claim the first crown.</div>';
   return topScores.map((entry, index) => `<div class="runefall-score ${index === 0 ? 'champion' : ''}"><span class="runefall-place">${index === 0 ? '👑' : `#${index + 1}`}</span><span class="runefall-score-avatar">${avatarMarkup(entry.avatar || '⚔️', 'runefall-score-portrait')}</span><div><strong>${index === 0 ? 'Champion · ' : ''}${escapeHtml(entry.name)}</strong><small>${formatScoreDate(entry.achievedAt)}</small></div><b>${Number(entry.score).toLocaleString()}</b></div>`).join('');
 }
+function placementHonour(result) {
+  const position = (result?.scores || []).findIndex(entry => entry.id === result?.entry?.id);
+  if (position < 0 || position > 2) return '';
+  const details = [{ icon: '👑', title: 'New Runefall Champion!', copy: 'The crown is yours!' }, { icon: '🥈', title: 'A Silver Revel!', copy: 'You have claimed second place!' }, { icon: '🥉', title: 'Top Three Revel!', copy: 'A place in the realm’s legends is yours!' }][position];
+  return `<div class="game-score-honour place-${position + 1}"><span>${details.icon}</span><strong>${details.title}</strong><small>${details.copy}</small></div>`;
+}
 
 export function openTavernBlocks({ scores: initialScores = [], onScore = async () => initialScores } = {}) {
   const overlay = createModal(`
@@ -122,9 +128,12 @@ export function openTavernBlocks({ scores: initialScores = [], onScore = async (
     if (submitted || score <= 0) return;
     submitted = true;
     try {
-      scores = await onScore({ score, lines, level });
+      const scoreResult = await onScore({ score, lines, level });
+      scores = scoreResult?.scores || scoreResult;
       scoreboard.innerHTML = renderScoreboard(scores);
       overlayEl.querySelector('small').textContent = `${score.toLocaleString()} renown recorded in the shared ledger`;
+      const honour = placementHonour(scoreResult);
+      if (honour) overlayEl.querySelector('small').insertAdjacentHTML('afterend', honour);
     } catch (err) {
       overlayEl.querySelector('small').textContent = `${score.toLocaleString()} renown earned · score could not be recorded`;
     }

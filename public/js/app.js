@@ -84,7 +84,7 @@ function openRunefallGame() { return openRunefallRevel({
     if (!result.success || !result.realm) throw new Error(result.error || 'Could not record that Runefall score.');
     window.state.runefallScores = result.realm.runefallScores || [];
     window.state._realmRevision = result.realm.revision || window.state._realmRevision;
-    return window.state.runefallScores;
+    return { scores: window.state.runefallScores, entry: result.entry };
   }
 }); }
 window.openTavernBlocks = () => openTavernGames({
@@ -96,7 +96,7 @@ window.openTavernBlocks = () => openTavernGames({
       if (!result.success || !result.realm) throw new Error(result.error || 'Could not record that Relic Recall score.');
       window.state.memoryScores = result.realm.memoryScores || [];
       window.state._realmRevision = result.realm.revision || window.state._realmRevision;
-      return window.state.memoryScores;
+      return { scores: window.state.memoryScores, entry: result.entry };
     }
   })
 });
