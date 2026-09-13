@@ -1,5 +1,6 @@
 import { createModal, closeModal } from './Modal.js';
 import { escapeHtml } from '../utils/helpers.js';
+import { avatarMarkup } from '../characters.js';
 
 const SHAPES = [
   { color: '#e5533d', cells: [[1, 1, 1, 1]] },
@@ -21,7 +22,7 @@ function formatScoreDate(achievedAt) {
 function renderScoreboard(scores) {
   const topScores = [...scores].sort((a, b) => b.score - a.score || new Date(a.achievedAt) - new Date(b.achievedAt)).slice(0, 3);
   if (!topScores.length) return '<div class="runefall-empty">No scores yet. Claim the first crown.</div>';
-  return topScores.map((entry, index) => `<div class="runefall-score ${index === 0 ? 'champion' : ''}"><span class="runefall-place">${index === 0 ? '👑' : `#${index + 1}`}</span><span class="runefall-score-avatar">${escapeHtml(entry.avatar || '⚔️')}</span><div><strong>${index === 0 ? 'Champion · ' : ''}${escapeHtml(entry.name)}</strong><small>${formatScoreDate(entry.achievedAt)}</small></div><b>${Number(entry.score).toLocaleString()}</b></div>`).join('');
+  return topScores.map((entry, index) => `<div class="runefall-score ${index === 0 ? 'champion' : ''}"><span class="runefall-place">${index === 0 ? '👑' : `#${index + 1}`}</span><span class="runefall-score-avatar">${avatarMarkup(entry.avatar || '⚔️', 'runefall-score-portrait')}</span><div><strong>${index === 0 ? 'Champion · ' : ''}${escapeHtml(entry.name)}</strong><small>${formatScoreDate(entry.achievedAt)}</small></div><b>${Number(entry.score).toLocaleString()}</b></div>`).join('');
 }
 
 export function openTavernBlocks({ scores: initialScores = [], onScore = async () => initialScores } = {}) {
