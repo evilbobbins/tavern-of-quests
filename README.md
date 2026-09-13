@@ -47,7 +47,7 @@ Built with a lightweight Node.js server and a persistent Docker volume, it is id
 - Explore the **Realm Map** to see active quests grouped by location.
 - The realm begins with **The Castle**, **The Wizard’s Lair**, **Mooncrest Academy**, **Dragon's Den**, and the **Bog of Eternal Stench**.
 - Locations and quest templates belong to the realm—not one adventurer—so everyone sees the same shared options. Location creation is currently curated to keep the Realm Map consistent.
-- The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including illustrated **Runefall** and **Relic Recall** champions plus portrait-led adventurer roster entries.
+- The **Realm Chronicle** offers a high-level view of the party’s activity and progress, including illustrated **Runefall** and **Relic Recall** champions plus portrait-led adventurer roster entries. Its **Overdue** section stays open for attention, while **Due in the Next Day** and the roster can be expanded when needed.
 
 ### 🗄️ Backup Vault
 
