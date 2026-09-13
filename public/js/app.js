@@ -610,7 +610,7 @@ window.shareQuest = async (questId) => {
   // Create modal with list of other adventurers
   const userListHtml = otherUsers.map(u => `
     <div class="share-user-item" onclick="window.confirmShareQuest('${questId}', '${u.id}')">
-      <div class="share-user-avatar">${u.avatar}</div>
+      <div class="share-user-avatar">${avatarMarkup(u.avatar, 'share-user-portrait')}</div>
       <div class="share-user-info">
         <div class="share-user-name">${escapeHtml(u.name)}</div>
         <div class="share-user-stats">Level ${u.level} • ${u.questCount} Quests</div>
